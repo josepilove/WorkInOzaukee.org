@@ -104,7 +104,25 @@ Never add a venue he hasn't been to.
 npm run dev      # localhost:4321
 npm run build    # → dist/
 npm run vocab    # regenerate _vocabulary.md files (needs Node 22.18+)
+./deploy.sh      # build + lftp mirror dist/ to Dreamhost
+./deploy.sh --dry
 ```
+
+## Deployment
+
+Runs from Joe's Mac, which holds both SSH keys (GitHub and Dreamhost). There is no CI —
+deliberately, so there's no third-party credential to manage.
+
+- `./deploy.sh` publishes the site. **It mirrors `dist/`, never the repo root** — unlike
+  his other sites, this one has a build step, and mirroring `./` would publish `src/`,
+  `node_modules` and the source of the private `/todo` while missing the actual HTML.
+- The script refuses to run if `dist/index.html` is missing, because `--delete` against
+  an empty build would wipe the live site.
+- `git push` is backup and history, not a deploy trigger. Remote is
+  `git@github.com:josepilove/WorkInOzaukee.org.git` on `main`.
+
+If a shell can't reach Dreamhost or GitHub, it's a sandbox without his keys — commit and
+say what's pending rather than retrying. The work waits for him; nothing is lost.
 
 ## Current state
 

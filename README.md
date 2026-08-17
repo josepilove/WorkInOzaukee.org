@@ -170,8 +170,24 @@ message instead of silently rendering blank.
 
 ## Deploy
 
-Static output in `dist/`. Netlify, Vercel, Cloudflare Pages, or GitHub Pages all work
-with zero config. Set the build command to `npm run build` and publish `dist`.
+```bash
+./deploy.sh --dry    # show what would transfer
+./deploy.sh          # build, then lftp mirror dist/ to Dreamhost
+```
+
+Same lftp/sftp pattern as the other sites in `~/Sites`, with one critical difference:
+**this one mirrors `dist/`, not `./`.** The repo is source; the site is the build output.
+Mirroring the root would publish `src/`, `node_modules`, and the source of the private
+`/todo` page, while missing the actual HTML. The script also refuses to run if
+`dist/index.html` is missing, since `--delete` against an empty build would wipe the
+live site.
+
+No CI, on purpose — the deploy runs from the Mac that already holds both SSH keys, so
+there's no third-party credential to create, store, or rotate. `git push` is backup and
+history, not a deploy trigger.
+
+From the phone: use Dispatch, which runs the Cowork session on the Mac. If the Mac is
+offline the work just waits.
 
 ## Gotcha: deleting a content file
 
