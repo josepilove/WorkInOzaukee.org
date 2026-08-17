@@ -31,15 +31,18 @@ hours_checked: 2026-01-01
 hours_source: third-party  # owner first-person website third-party
 hours_url: https://example.com/hours
 
-# The rubric. Score the place once — anchors in ./_vocabulary.md.
-# Skip any you haven't tested; profiles refuse to compute below 70% coverage.
+# Scoring. Once per place — anchors in ./_vocabulary.md.
+# Skip anything you haven't tested; profiles refuse to compute below 70% coverage.
 scores:
+  # Quality: 1 bad … 5 good
   wifi: 3                  # did the connection hold up?
   power: 3                 # could you plug in where you wanted to sit?
   seat: 3                  # could you work there for three hours?
-  sound: 3                 # could you think?
   welcome: 3               # could you stay without feeling like a problem?
   calls: 3                 # could you take one?
+  # Continua: neither end is wrong, pick where the room actually sits
+  sound: 0                 # -2 hushed … +2 lively
+  pace: 0                  # -2 lingering … +2 brisk
 scores_updated: 2026-01-01
 
 # Optional. Delete what you don't need.

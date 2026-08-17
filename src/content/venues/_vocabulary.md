@@ -115,17 +115,20 @@ One-off deviations from the normal hours.
 Low-trust sources render with a "?" badge. Bump this to `first-person` or
 `owner` the moment you confirm, and update `hours_checked` with it.
 
-## The rubric
+## Scoring
 
-Six dimensions, `1`–`5`, all optional, under a `scores:` block on the **venue**.
+All under a `scores:` block on the **venue**, scored once per place rather than
+per visit — outlets, seating, room noise and call etiquette are properties of the
+room, not of a Tuesday.
 
-Scored once per place, not per visit — outlets, seating, room noise and call
-etiquette are properties of the room, not of a Tuesday. Score against these
-sentences rather than by feel; that's what keeps a 4 in November meaning what a
-4 in March meant. Anchors are written at 1, 3 and 5; use 2 and 4 for "between
-these two."
+Two kinds of dimension, because "is this good?" has two kinds of answer.
 
-### `wifi` — Did the connection hold up?
+### Quality — `1`–`5`, higher is better
+
+For things where one end is simply worse. Nobody prefers unreliable wifi.
+Anchors are at 1, 3 and 5; use 2 and 4 for "between these two."
+
+#### `wifi` — Did the connection hold up?
 
 | | |
 | --- | --- |
@@ -133,7 +136,7 @@ these two."
 | **3** | Fine for mail and documents. A video call would be a gamble. |
 | **5** | Held a video call without thinking about it. |
 
-### `power` — Could you plug in where you wanted to sit?
+#### `power` — Could you plug in where you wanted to sit?
 
 | | |
 | --- | --- |
@@ -141,7 +144,7 @@ these two."
 | **3** | Outlets exist, but you chose your seat around them or ran a cord. |
 | **5** | Power at most seats. Sit wherever you like. |
 
-### `seat` — Could you work there for three hours?
+#### `seat` — Could you work there for three hours?
 
 | | |
 | --- | --- |
@@ -149,15 +152,7 @@ these two."
 | **3** | Fine for an hour. Sore by the second. |
 | **5** | Table at the right height, chair with a back, room for laptop, notebook and coffee. |
 
-### `sound` — Could you think?
-
-| | |
-| --- | --- |
-| **1** | Unworkable. Music too loud to hold a thought, or a grinder every ninety seconds. |
-| **3** | Steady background hum. Headphones solve it. |
-| **5** | Quiet enough to work without headphones, not so quiet you feel watched. |
-
-### `welcome` — Could you stay without feeling like a problem?
+#### `welcome` — Could you stay without feeling like a problem?
 
 | | |
 | --- | --- |
@@ -165,7 +160,7 @@ these two."
 | **3** | Nobody minds a couple of hours as long as you keep ordering. |
 | **5** | Laptops are normal here. Stay all morning, nobody notices. |
 
-### `calls` — Could you take one?
+#### `calls` — Could you take one?
 
 | | |
 | --- | --- |
@@ -173,20 +168,52 @@ these two."
 | **3** | Possible if you step outside or wait for a lull. |
 | **5** | Take it at your seat, or there’s a room or corner made for it. |
 
+### Continua — `-2`…`+2`, neither end is wrong
+
+For things where both poles are somebody's ideal, often the same person on
+different days. There is no "good" direction, so don't score these as if there
+were — pick the end the room actually sits at.
+
+#### `sound` — What does the room sound like?
+
+**Hushed** `-2` ←→ `+2` **Lively**
+
+| | |
+| --- | --- |
+| **-2** | Library quiet. You can hear your own typing, and so can everyone else. |
+| **0** | Steady background — some conversation, music you stop noticing. |
+| **+2** | Full of people talking. Energising if you want company, hopeless if you need to think. |
+
+#### `pace` — How fast does the room turn over?
+
+**Lingering** `-2` ←→ `+2` **Brisk**
+
+| | |
+| --- | --- |
+| **-2** | People settle in for hours. Nothing about the room hurries you. |
+| **0** | Ordinary churn. Nobody is watching the clock but nobody is camped either. |
+| **+2** | Constant in-and-out, queue at the counter, tables turning. Fine for an hour, tiring for four. |
+
 ### How they combine
 
-- **Deep work** — A long stretch of focus. Somewhere to sit, quiet, and power.
-  sound 30%, seat 25%, power 20%, wifi 15%, welcome 10%
+Quality dimensions are weighted straight. On the continua each profile has a
+**target** rather than a preference for "high" — so the same score reads as a
+match or a mismatch depending on the kind of day being asked about.
+
+- **Deep work** — A long stretch of focus. Quiet, somewhere to settle, and power.
+  seat 20%, power 15%, wifi 15%, wants hushed sound 30%, wants lingering pace 20%
 - **Calls & meetings** — A day of talking to people. Needs bandwidth and somewhere to talk.
-  calls 40%, sound 25%, wifi 25%, welcome 10%
+  calls 40%, wifi 30%, wants leans hushed sound 20%, wants in between pace 10%
 - **Quick session** — An hour between things. Sit down, get online, get out.
-  wifi 30%, welcome 25%, seat 20%, power 15%, sound 10%
+  wifi 35%, welcome 25%, seat 15%, wants leans brisk pace 15%, wants in between sound 10%
+- **Company** — Working alone is fine; working near people is better. You want a room with something going on.
+  welcome 30%, seat 15%, wifi 10%, wants lively sound 30%, wants in between pace 15%
 
 Skip anything you haven't tested. A profile refuses to compute below 70% coverage
 and prints "not enough scored to say" instead — leaving a dimension out is
 always safer than guessing at it.
 
-Set `scores_updated` when you re-score. Current rubric version: **1**.
+Set `scores_updated` when you re-score. Current rubric version: **2**.
 
 ## Fields with no fixed vocabulary
 

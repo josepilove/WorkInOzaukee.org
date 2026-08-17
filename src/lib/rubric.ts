@@ -1,32 +1,54 @@
 /**
- * The rubric.
+ * The scoring model.
  *
- * Consistency doesn't come from the numbers, it comes from the anchors. A bare
- * 1–5 drifts within a month — today's 4 is next spring's 3 and there's no way to
- * tell which. So every level here has words attached, and you score by finding
- * the sentence that matches rather than by picking a number that feels right.
+ * Two kinds of dimension, because "is this place good?" has two kinds of answer.
  *
- * Anchors are written at 1, 3 and 5. Use 2 and 4 for "between these two."
+ *   QUALITY (1–5, higher is better)
+ *     Things where one end is simply worse. Nobody prefers unreliable wifi or a
+ *     table that wobbles. A plain scale is the honest shape.
  *
- * These are JUDGMENTS. They live alongside — not instead of — the raw
- * observations on a visit (noise level, laptop count, weather), which are facts
- * and don't need a rubric. Same split as venues vs. visits: record what was
- * there, then say what you thought of it.
+ *   CONTINUUM (−2…+2, between two legitimate poles)
+ *     Things where both ends are somebody's ideal. A hushed room and a lively
+ *     one are not better and worse, they're different days. Scoring these 1–5
+ *     was meaningless — "sound: 4" told you nothing about which direction.
+ *
+ * Consistency comes from the anchors either way. You score by finding the
+ * sentence that matches, not by picking a number that feels right.
+ *
+ * Because continua have no "good" end, a profile can't just weight-and-average
+ * them. Each profile carries a TARGET, and fit is distance from that target.
+ * Deep work wants hushed; Company wants lively; same number, opposite reading.
  */
 
-export const RUBRIC_VERSION = 1;
+export const RUBRIC_VERSION = 2;
 
-export type Dimension = 'wifi' | 'power' | 'seat' | 'sound' | 'welcome' | 'calls';
+export type QualityKey = 'wifi' | 'power' | 'seat' | 'welcome' | 'calls';
+export type ContinuumKey = 'sound' | 'pace';
+export type Dimension = QualityKey | ContinuumKey;
 
-export interface DimensionDef {
-  key: Dimension;
+export interface QualityDef {
+  kind: 'quality';
+  key: QualityKey;
   label: string;
   question: string;
   anchors: { 1: string; 3: string; 5: string };
 }
 
-export const DIMENSIONS: DimensionDef[] = [
+export interface ContinuumDef {
+  kind: 'continuum';
+  key: ContinuumKey;
+  label: string;
+  question: string;
+  low: string; // the −2 pole
+  high: string; // the +2 pole
+  anchors: { '-2': string; '0': string; '2': string };
+}
+
+export type DimensionDef = QualityDef | ContinuumDef;
+
+export const QUALITIES: QualityDef[] = [
   {
+    kind: 'quality',
     key: 'wifi',
     label: 'Wifi',
     question: 'Did the connection hold up?',
@@ -37,6 +59,7 @@ export const DIMENSIONS: DimensionDef[] = [
     },
   },
   {
+    kind: 'quality',
     key: 'power',
     label: 'Power',
     question: 'Could you plug in where you wanted to sit?',
@@ -47,6 +70,7 @@ export const DIMENSIONS: DimensionDef[] = [
     },
   },
   {
+    kind: 'quality',
     key: 'seat',
     label: 'Seat',
     question: 'Could you work there for three hours?',
@@ -57,16 +81,7 @@ export const DIMENSIONS: DimensionDef[] = [
     },
   },
   {
-    key: 'sound',
-    label: 'Sound',
-    question: 'Could you think?',
-    anchors: {
-      1: 'Unworkable. Music too loud to hold a thought, or a grinder every ninety seconds.',
-      3: 'Steady background hum. Headphones solve it.',
-      5: 'Quiet enough to work without headphones, not so quiet you feel watched.',
-    },
-  },
-  {
+    kind: 'quality',
     key: 'welcome',
     label: 'Welcome',
     question: 'Could you stay without feeling like a problem?',
@@ -77,6 +92,7 @@ export const DIMENSIONS: DimensionDef[] = [
     },
   },
   {
+    kind: 'quality',
     key: 'calls',
     label: 'Calls',
     question: 'Could you take one?',
@@ -88,69 +104,130 @@ export const DIMENSIONS: DimensionDef[] = [
   },
 ];
 
+export const CONTINUA: ContinuumDef[] = [
+  {
+    kind: 'continuum',
+    key: 'sound',
+    label: 'Sound',
+    question: 'What does the room sound like?',
+    low: 'Hushed',
+    high: 'Lively',
+    anchors: {
+      '-2': 'Library quiet. You can hear your own typing, and so can everyone else.',
+      '0': 'Steady background — some conversation, music you stop noticing.',
+      '2': 'Full of people talking. Energising if you want company, hopeless if you need to think.',
+    },
+  },
+  {
+    kind: 'continuum',
+    key: 'pace',
+    label: 'Pace',
+    question: 'How fast does the room turn over?',
+    low: 'Lingering',
+    high: 'Brisk',
+    anchors: {
+      '-2': 'People settle in for hours. Nothing about the room hurries you.',
+      '0': 'Ordinary churn. Nobody is watching the clock but nobody is camped either.',
+      '2': 'Constant in-and-out, queue at the counter, tables turning. Fine for an hour, tiring for four.',
+    },
+  },
+];
+
+export const DIMENSIONS: DimensionDef[] = [...QUALITIES, ...CONTINUA];
+
 export const DIMENSION_BY_KEY = Object.fromEntries(
   DIMENSIONS.map((d) => [d.key, d]),
 ) as Record<Dimension, DimensionDef>;
 
 export type Scores = Partial<Record<Dimension, number>>;
 
-/**
- * One number can't answer "is this place good," because the honest answer is
- * "for what?" A wine bar that's hopeless for a video call may be the best room
- * in town for three hours of writing. So the same six scores get read three
- * ways rather than averaged into a star rating that hides the tradeoff.
- */
+// ---------------------------------------------------------------------------
+// Profiles
+// ---------------------------------------------------------------------------
+
 export interface Profile {
   key: string;
   label: string;
   blurb: string;
-  weights: Partial<Record<Dimension, number>>;
+  /** Quality dimensions: plain weights. Higher score is better. */
+  qualities: Partial<Record<QualityKey, number>>;
+  /** Continua: where this profile WANTS to land, and how much it cares. */
+  targets: Partial<Record<ContinuumKey, { target: number; weight: number }>>;
 }
 
 export const PROFILES: Profile[] = [
   {
     key: 'deep',
     label: 'Deep work',
-    blurb: 'A long stretch of focus. Somewhere to sit, quiet, and power.',
-    weights: { sound: 0.3, seat: 0.25, power: 0.2, wifi: 0.15, welcome: 0.1 },
+    blurb: 'A long stretch of focus. Quiet, somewhere to settle, and power.',
+    qualities: { seat: 0.2, power: 0.15, wifi: 0.15 },
+    targets: { sound: { target: -2, weight: 0.3 }, pace: { target: -2, weight: 0.2 } },
   },
   {
     key: 'calls',
     label: 'Calls & meetings',
     blurb: 'A day of talking to people. Needs bandwidth and somewhere to talk.',
-    weights: { calls: 0.4, sound: 0.25, wifi: 0.25, welcome: 0.1 },
+    qualities: { calls: 0.4, wifi: 0.3 },
+    targets: { sound: { target: -1, weight: 0.2 }, pace: { target: 0, weight: 0.1 } },
   },
   {
     key: 'quick',
     label: 'Quick session',
     blurb: 'An hour between things. Sit down, get online, get out.',
-    weights: { wifi: 0.3, welcome: 0.25, seat: 0.2, power: 0.15, sound: 0.1 },
+    qualities: { wifi: 0.35, welcome: 0.25, seat: 0.15 },
+    targets: { pace: { target: 1, weight: 0.15 }, sound: { target: 0, weight: 0.1 } },
+  },
+  {
+    key: 'company',
+    label: 'Company',
+    blurb: "Working alone is fine; working near people is better. You want a room with something going on.",
+    qualities: { welcome: 0.3, seat: 0.15, wifi: 0.1 },
+    targets: { sound: { target: 2, weight: 0.3 }, pace: { target: 0, weight: 0.15 } },
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Fit
+// ---------------------------------------------------------------------------
+
 /**
- * Weighted mean over whatever dimensions were actually scored, with the weights
- * renormalized to what's present.
+ * Everything normalizes to 0–1 before it's combined.
  *
- * The coverage floor is the important part: if fewer than 70% of a profile's
- * weight was scored, return null instead of a number. A "Deep work: 4.6" built
- * from one dimension is worse than no score at all, because it looks like the
- * real thing.
+ *   quality:   (v − 1) / 4          → 1 is 0.0, 5 is 1.0
+ *   continuum: 1 − |v − target| / 4 → on target is 1.0, opposite pole is 0.0
+ *
+ * Weights are renormalized to whatever was actually scored, and below the
+ * coverage floor we return null rather than a number. A confident-looking 4.6
+ * assembled from one answer is worse than admitting the place wasn't checked.
  */
 export const COVERAGE_FLOOR = 0.7;
 
 export function profileScore(scores: Scores, profile: Profile): number | null {
   let weighted = 0;
   let present = 0;
-  for (const [dim, weight] of Object.entries(profile.weights) as [Dimension, number][]) {
-    const v = scores[dim];
+
+  for (const [key, weight] of Object.entries(profile.qualities) as [QualityKey, number][]) {
+    const v = scores[key];
     if (typeof v === 'number') {
-      weighted += v * weight;
+      weighted += ((v - 1) / 4) * weight;
       present += weight;
     }
   }
+
+  for (const [key, spec] of Object.entries(profile.targets) as [
+    ContinuumKey,
+    { target: number; weight: number },
+  ][]) {
+    const v = scores[key];
+    if (typeof v === 'number') {
+      weighted += (1 - Math.abs(v - spec.target) / 4) * spec.weight;
+      present += spec.weight;
+    }
+  }
+
   if (present < COVERAGE_FLOOR) return null;
-  return weighted / present;
+  // Present on a familiar 1–5 scale.
+  return (weighted / present) * 4 + 1;
 }
 
 export function hasAnyScore(scores: Scores | undefined): boolean {
@@ -158,34 +235,38 @@ export function hasAnyScore(scores: Scores | undefined): boolean {
   return DIMENSIONS.some((d) => typeof scores[d.key] === 'number');
 }
 
-/** Average each dimension across visits, so a venue reads as its typical self. */
-export function averageScores(all: (Scores | undefined)[]): {
-  scores: Scores;
-  counts: Partial<Record<Dimension, number>>;
-} {
-  const scores: Scores = {};
-  const counts: Partial<Record<Dimension, number>> = {};
-  for (const dim of DIMENSIONS.map((d) => d.key)) {
-    const vals = all
-      .map((s) => s?.[dim])
-      .filter((v): v is number => typeof v === 'number');
-    if (vals.length) {
-      scores[dim] = vals.reduce((a, b) => a + b, 0) / vals.length;
-      counts[dim] = vals.length;
-    }
-  }
-  return { scores, counts };
-}
-
 export function formatScore(n: number): string {
   return n.toFixed(1).replace(/\.0$/, '');
 }
 
-/** Plain-language read of a profile score, so the number isn't doing all the work. */
 export function verdictFor(n: number): string {
   if (n >= 4.5) return 'as good as it gets here';
   if (n >= 3.75) return 'reliably good';
   if (n >= 3) return 'workable';
   if (n >= 2) return 'only if you have to';
   return 'no';
+}
+
+/** Where a value sits on a continuum, in words. Never "3 out of 5". */
+export function continuumLabel(def: ContinuumDef, v: number): string {
+  if (v <= -2) return def.low.toLowerCase();
+  if (v === -1) return `leans ${def.low.toLowerCase()}`;
+  if (v === 0) return 'in between';
+  if (v === 1) return `leans ${def.high.toLowerCase()}`;
+  return def.high.toLowerCase();
+}
+
+/** 0–100, for a bar. −2 sits at the left pole, +2 at the right. */
+export function continuumPercent(v: number): number {
+  return ((v + 2) / 4) * 100;
+}
+
+/** The profile a place suits best — the useful one-line answer. */
+export function bestProfile(scores: Scores): { profile: Profile; score: number } | null {
+  let best: { profile: Profile; score: number } | null = null;
+  for (const p of PROFILES) {
+    const s = profileScore(scores, p);
+    if (s !== null && (best === null || s > best.score)) best = { profile: p, score: s };
+  }
+  return best;
 }

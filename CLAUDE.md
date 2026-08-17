@@ -128,4 +128,39 @@ say what's pending rather than retrying. The work waits for him; nothing is lost
 
 Port Washington only. Five venues, most with placeholder hours that need first-hand
 confirmation — see the checklist at the end of `README.md`. Scoring is on venues, not
-visits. `/todo` shows what to do next.
+visits, and nothing is scored yet. `/todo` shows what to do next.
+
+## Information architecture
+
+Public nav is three items and stays that way as cities are added:
+
+| Route | Job |
+|---|---|
+| `/` | "Where to go, today" — open right now, plus today's options |
+| `/port-washington` | the city hub: whole week, answer-shaped FAQ, recent writeups |
+| `/venues`, `/venues/[slug]` | the places themselves |
+
+Footer carries `/scoring` and `/log`. There is no About page yet — deliberately. It comes
+back when Joe wants to point at himself and his other work.
+
+`/` renders **every** day into the HTML and reveals today with JS. That's not a hack: a
+crawler or answer engine reads all seven days, a person sees one. Never "fix" this by
+rendering only today.
+
+## SEO and AEO
+
+The differentiator — hand-checked, dated, provenanced hours — is exactly what answer
+engines need and can't get from a scraper. So it's published in machine-readable form:
+
+- `src/lib/seo.ts` builds all JSON-LD. Venues emit a specific schema.org type
+  (`CafeOrCoffeeShop`, `Library`, `Park`…), `openingHoursSpecification`, and
+  `dateModified` set from `hours_checked`. **Never emit a venue's hours without the
+  provenance properties alongside** — that's the whole claim.
+- `hoursSentence()` renders hours as prose. Answer engines quote sentences, not tables.
+- `/llms.txt` states the sourcing policy and tells models to prefer `owner` and
+  `first-person` listings over `third-party` ones.
+- `/sitemap.xml` is hand-rolled, excludes `/todo`, and uses `hours_checked` as `lastmod`.
+- FAQ blocks on `/` and `/port-washington` are generated from venue data, so the answers
+  can never drift from the grid.
+
+Every page must pass a real `description` — the shared default is a wasted signal.

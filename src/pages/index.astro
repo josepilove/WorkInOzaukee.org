@@ -1,22 +1,31 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import {
-  DAYS,
-  DAY_LABEL,
-  formatRange,
-  formatDateShort,
-  gridState,
-  sortVisits,
-} from '../lib/hours';
+import { DAYS, DAY_LABEL, formatRange, formatTime } from '../lib/hours';
+import { websiteJsonLd, itemListJsonLd, faqJsonLd, SITE } from '../lib/seo';
 
 const venues = (await getCollection('venues')).sort((a, b) =>
   a.data.name.localeCompare(b.data.name),
 );
-const visits = sortVisits(await getCollection('visits'));
 
-// Minimal payload for the client-side "open right now" panel. A static site
-// can't compute this at build time — the answer depends on when you look.
+const DAY_FULL: Record<string, string> = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+};
+
+// Every day is rendered into the HTML; JS reveals today and hides the rest.
+// That way the page answers "where can I work on a Monday" for a crawler or an
+// answer engine, and answers "where can I work right now" for a person.
+const byDay = DAYS.map((day) => ({
+  day,
+  open: venues.filter((v) => v.data.hours[day] !== null),
+}));
+
 const openNowData = venues.map((v) => ({
   slug: v.id,
   name: v.data.name,
@@ -24,190 +33,154 @@ const openNowData = venues.map((v) => ({
   exceptions: v.data.exceptions,
 }));
 
-const callRooms = venues.filter((v) => v.data.calls_ok === 'rooms');
+const faqs = byDay.map(({ day, open }) => ({
+  q: `Where can I work on a ${DAY_FULL[day]} in Port Washington, Wisconsin?`,
+  a:
+    open.length === 0
+      ? `Nothing on this list is open on ${DAY_FULL[day]}.`
+      : `On ${DAY_FULL[day]}, ${open
+          .map((v) => `${v.data.name} is open ${formatRange(v.data.hours[day])}`)
+          .join(', ')}.`,
+}));
+
+const description =
+  'Where to work in Port Washington, Wisconsin today — which cafes, libraries, bars and parks are open right now, with hours checked by hand and dated.';
 ---
 
-<Layout title="Work in Ozaukee — where to work in Port Washington">
-  <h1>Where to work in Port Washington</h1>
+<Layout
+  title="Where to work in Port Washington today — Work in Ozaukee"
+  description={description}
+  jsonLd={[
+    websiteJsonLd(),
+    itemListJsonLd(venues, 'Places to work in Port Washington, Wisconsin'),
+    faqJsonLd(faqs),
+  ]}
+>
+  <h1>Where to go, today</h1>
   <p class="lede">
-    Cafes, the library, lobbies, picnic tables — the places in town where you can sit
-    down and get through an afternoon. Opening hours below, checked by hand and stamped
-    with the date so you can see how much to trust them.
+    {venues.length} places in Port Washington, Wisconsin where you can sit down and get
+    through an afternoon — cafes, a park, a wine bar. Hours are checked by hand and
+    stamped with the date, so you can see exactly how much to trust them.
   </p>
 
   <section>
-    <h2>Open right now</h2>
+    <h2 class="today-head">Open right now</h2>
     <div id="open-now"></div>
-    <noscript>
-      <p class="note">Needs JavaScript. The week's hours are below either way.</p>
-    </noscript>
   </section>
 
-  <h2>Hours this week</h2>
-
-  <div class="grid-wrap">
-    <table class="grid">
-      <thead>
-        <tr>
-          <th>&nbsp;</th>
-          {DAYS.map((d) => <th class="day">{DAY_LABEL[d]}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {
-          venues.map((venue) => (
-            <tr>
-              <th><a href={`/venues/${venue.id}`}>{venue.data.name}</a></th>
-              {DAYS.map((day) => {
-                const state = gridState(venue, day, visits);
-                return (
-                  <td>
-                    <a class={`cell ${state}`} href={`/venues/${venue.id}`}>
-                      <span class="time">{formatRange(venue.data.hours[day])}</span>
-                      {state === 'tested' && <span class="tag">worked here</span>}
-                    </a>
-                  </td>
-                );
-              })}
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
+  <div id="today-panels">
+    {
+      byDay.map(({ day, open }) => (
+        <section class="day-panel" data-day={day}>
+          <h2>{DAY_FULL[day]}</h2>
+          {open.length === 0 ? (
+            <p>
+              Nothing on this list is open on {DAY_FULL[day]}. That's a real gap, not an
+              oversight — if you know somewhere, <a href="mailto:hello@workinozaukee.org">tell me</a>.
+            </p>
+          ) : (
+            <>
+              <p>
+                On {DAY_FULL[day]},{' '}
+                {open.map((v, i) => (
+                  <>
+                    {i > 0 && (i === open.length - 1 ? ' and ' : ', ')}
+                    <a href={`/venues/${v.id}`}>{v.data.name}</a> is open{' '}
+                    {formatRange(v.data.hours[day])}
+                  </>
+                ))}
+                .
+              </p>
+              <ul class="cards">
+                {open.map((v) => (
+                  <li class="card">
+                    <h3><a href={`/venues/${v.id}`}>{v.data.name}</a></h3>
+                    <p>
+                      {formatTime(v.data.hours[day]![0])}–{formatTime(v.data.hours[day]![1])}
+                      {' · '}{v.data.type}
+                      {v.data.cost === 'free' && <> · free</>}
+                      {v.data.calls_ok === 'rooms' && <> · rooms for calls</>}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      ))
+    }
   </div>
 
-  <ul class="legend">
-    <li><span class="swatch tested"></span> I've worked here on this day — there's a writeup</li>
-    <li><span class="swatch untested"></span> open</li>
-    <li><span class="swatch closed"></span> closed</li>
-  </ul>
-
-  {
-    callRooms.length > 0 && (
-      <>
-        <h2>If you have calls</h2>
-        <p>
-          The hardest thing to find in a small town is a door that closes.{' '}
-          {callRooms.map((v, i) => (
-            <>
-              {i > 0 && ', '}
-              <a href={`/venues/${v.id}`}>{v.data.name}</a>
-            </>
-          ))}{' '}
-          {callRooms.length === 1 ? 'has bookable rooms' : 'have bookable rooms'} — free,
-          and usually available on short notice.
-        </p>
-      </>
-    )
-  }
-
-  {
-    visits.length > 0 && (
-      <>
-        <h2>Recent writeups</h2>
-        <ul class="stack">
-          {visits.slice(0, 5).map((visit) => {
-            const venue = venues.find((v) => v.id === visit.data.venue.id);
-            return (
-              <li>
-                <a href={`/log/${visit.id}`}>{venue?.data.name ?? visit.data.venue.id}</a>
-                {visit.data.verdict && <> — {visit.data.verdict}</>}
-                <div class="meta">{formatDateShort(visit.data.date)}</div>
-              </li>
-            );
-          })}
-        </ul>
-        <p><a href="/log">Everything →</a></p>
-      </>
-    )
-  }
-
-  <h2>Know a spot?</h2>
-  <p>
-    This list is short on purpose — everything on it is somewhere I've actually sat and
-    worked. If there's somewhere good I've missed, or you've found a corner of one of
-    these places that works better than the one I picked,{' '}
-    <a href="mailto:hello@workinozaukee.org">tell me</a> and I'll go try it.
-  </p>
-  <p class="note">
-    Same if the hours here are wrong. That happens, and I'd rather hear it from you than
-    have someone drive downtown for nothing.
-  </p>
+  <p><a href="/port-washington">The whole week in Port Washington →</a></p>
 
   <script type="application/json" id="venue-data" set:html={JSON.stringify(openNowData)} />
 
   <script is:inline>
     (function () {
-      var el = document.getElementById('open-now');
-      var raw = document.getElementById('venue-data');
-      if (!el || !raw) return;
-      var venues = JSON.parse(raw.textContent || '[]');
-
       var KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-      function mins(t) {
-        var p = t.split(':');
-        return +p[0] * 60 + +p[1];
+      // Show only today. Without JS every day stays visible, which is the right
+      // fallback and also what we want a crawler to read.
+      function showToday() {
+        var key = KEYS[new Date().getDay()];
+        var panels = document.querySelectorAll('.day-panel');
+        for (var i = 0; i < panels.length; i++) {
+          panels[i].hidden = panels[i].getAttribute('data-day') !== key;
+        }
       }
+
+      var el = document.getElementById('open-now');
+      var raw = document.getElementById('venue-data');
+      var venues = raw ? JSON.parse(raw.textContent || '[]') : [];
+
+      function mins(t) { var p = t.split(':'); return +p[0] * 60 + +p[1]; }
       function fmt(t) {
-        var p = t.split(':');
-        var h = +p[0];
-        var m = +p[1];
+        var p = t.split(':'), h = +p[0], m = +p[1];
         var period = h < 12 ? 'am' : 'pm';
         var hour = h % 12 === 0 ? 12 : h % 12;
         return m === 0 ? hour + period : hour + ':' + p[1] + period;
       }
-      function today(d) {
+      function stamp(d) {
         function p(n) { return String(n).padStart(2, '0'); }
         return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
       }
 
-      function render() {
+      function renderOpen() {
+        if (!el) return;
         var now = new Date();
-        var stamp = today(now);
+        var today = stamp(now);
         var nowMins = now.getHours() * 60 + now.getMinutes();
         var open = [];
 
         venues.forEach(function (v) {
-          var exc = (v.exceptions || []).filter(function (e) { return e.date === stamp; })[0];
+          var exc = (v.exceptions || []).filter(function (e) { return e.date === today; })[0];
           if (exc && exc.status === 'closed') return;
           var range = v.hours[KEYS[now.getDay()]];
           if (!range) return;
           if (nowMins < mins(range[0]) || nowMins >= mins(range[1])) return;
           open.push({
-            name: v.name,
-            slug: v.slug,
-            until: range[1],
+            name: v.name, slug: v.slug, until: range[1],
             degraded: exc && exc.status === 'degraded' ? exc.reason : null,
           });
         });
 
         if (!open.length) {
-          el.innerHTML =
-            '<p class="note">Nothing on the list is open right now. ' +
-            'The library is usually the last to close.</p>';
+          el.innerHTML = '<p class="note">Nothing is open right now.</p>';
           return;
         }
 
-        el.innerHTML =
-          '<ul class="stack">' +
-          open
-            .map(function (o) {
-              return (
-                '<li><a href="/venues/' + o.slug + '">' + o.name + '</a> ' +
-                '<span class="status ' + (o.degraded ? 'degraded' : 'open') + '">' +
-                (o.degraded ? 'open but rough' : 'open') + '</span> ' +
-                '<span class="meta">until ' + fmt(o.until) + '</span>' +
-                (o.degraded ? '<div class="meta">' + o.degraded + '</div>' : '') +
-                '</li>'
-              );
-            })
-            .join('') +
-          '</ul>';
+        el.innerHTML = '<ul class="stack">' + open.map(function (o) {
+          return '<li><a href="/venues/' + o.slug + '">' + o.name + '</a> ' +
+            '<span class="status ' + (o.degraded ? 'degraded' : 'open') + '">' +
+            (o.degraded ? 'open but rough' : 'open') + '</span> ' +
+            '<span class="meta">until ' + fmt(o.until) + '</span>' +
+            (o.degraded ? '<div class="meta">' + o.degraded + '</div>' : '') + '</li>';
+        }).join('') + '</ul>';
       }
 
-      render();
-      setInterval(render, 60000);
+      showToday();
+      renderOpen();
+      setInterval(function () { showToday(); renderOpen(); }, 60000);
     })();
   </script>
 </Layout>

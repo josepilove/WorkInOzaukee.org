@@ -1,14 +1,31 @@
 ---
+import { SITE } from '../lib/seo';
+
 interface Props {
   title: string;
+  /** Required in practice — a shared description is a wasted signal. */
   description?: string;
   noindex?: boolean;
+  /** Any number of JSON-LD objects. Emitted as a @graph. */
+  jsonLd?: object[];
+  /** ISO date for freshness signals. Usually a venue's hours_checked. */
+  modified?: string;
 }
 const {
   title,
-  description = 'A working guide to Port Washington, Wisconsin.',
+  description = 'Where to work in Port Washington, Wisconsin — cafes, the library, parks and bars, with hours checked by hand.',
   noindex = false,
+  jsonLd = [],
+  modified,
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const graph = jsonLd.length
+  ? { '@context': 'https://schema.org', '@graph': jsonLd.map(({ ...o }) => {
+      delete (o as Record<string, unknown>)['@context'];
+      return o;
+    }) }
+  : null;
 ---
 
 <!doctype html>
@@ -18,20 +35,41 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonical} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+      )
+    }
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="geo.region" content="US-WI" />
+    <meta name="geo.placename" content="Port Washington, Wisconsin" />
+    {modified && <meta name="last-modified" content={modified} />}
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#1f5f4a" />
     <link rel="alternate" type="application/rss+xml" title="Work in Ozaukee" href="/rss.xml" />
+    {graph && <script type="application/ld+json" set:html={JSON.stringify(graph)} />}
   </head>
   <body>
     <header class="site">
       <a href="/" class="wordmark">Work in Ozaukee</a>
       <nav>
-        <a href="/">This week</a>
-        <a href="/log">Log</a>
-        <a href="/venues">Places</a>
-        <a href="/rubric">Scoring</a>
-        <a href="/about">About</a>
+        <a href="/">Where to go, today</a>
+        <a href="/port-washington">Port Washington</a>
+        <a href="/venues">Venues</a>
       </nav>
     </header>
 
@@ -46,8 +84,10 @@ const {
         Something wrong? <a href="mailto:hello@workinozaukee.org">Tell me</a> and I'll go look.
       </p>
       <p class="fine">
-        No account, no app, no social login. <a href="/rss.xml">RSS</a>
+        <a href="/scoring">How scoring works</a> · <a href="/log">The log</a> ·
+        <a href="/rss.xml">RSS</a>
       </p>
+      <p class="fine">No account, no app, no social login.</p>
     </footer>
 
     <style is:global>
@@ -287,6 +327,64 @@ const {
         background: #fff;
       }
       .attrs li b { font-weight: 600; color: var(--ink); }
+
+      /* ---------- continua ---------- */
+
+      .continua { list-style: none; padding: 0; margin: 1rem 0; }
+      .continua li { margin: 0 0 1.1rem; }
+
+      .cont-head {
+        display: flex; justify-content: space-between; align-items: baseline;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.78rem; color: var(--ink-soft);
+        margin-bottom: 0.3rem;
+      }
+      .cont-head b { color: var(--ink); font-size: 0.85rem; }
+      .cont-value { color: var(--accent); font-weight: 600; }
+
+      .cont-track {
+        position: relative;
+        height: 6px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #e6efe9, #efe7db);
+        border: 1px solid var(--rule);
+      }
+      .cont-dot {
+        position: absolute;
+        top: 50%;
+        width: 13px; height: 13px;
+        margin-left: -6.5px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--paper);
+        transform: translateY(-50%);
+      }
+      .cont-poles {
+        display: flex; justify-content: space-between;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.72rem; color: var(--ink-faint);
+        margin-top: 0.3rem;
+      }
+
+      .best {
+        border-left: 3px solid var(--accent);
+        padding: 0.15rem 0 0.15rem 0.9rem;
+        margin: 1rem 0;
+      }
+      .best b { font-size: 1.05rem; }
+
+      /* ---------- today ---------- */
+
+      .day-panel[hidden] { display: none; }
+
+      .today-head {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin: 2rem 0 0.25rem;
+      }
 
       /* ---------- open now ---------- */
 

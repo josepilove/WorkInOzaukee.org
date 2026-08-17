@@ -109,14 +109,35 @@ bookmark it. It carries the parts that would make the site read like a private n
 Same data, same build. Only the framing differs: a gap is an invitation on the public
 side and an assignment on yours.
 
-## The rubric
+## Scoring
 
-Six dimensions, 1–5, all optional: **wifi, power, seat, sound, welcome, calls.**
+**On the venue, once — not per visit.** Outlets, seating and call etiquette are
+properties of the room, not of a Tuesday. Visits are just `date` + `venue` + prose.
 
-**Scored on the venue, once — not per visit.** Outlets, seating, room noise and call
-etiquette are properties of the room, not of a Tuesday. Scoring every session made every
-entry expensive, and expensive entries don't get written. Venues get touched rarely,
-which is where the effort belongs. Visits are back down to `date` + `venue` + prose.
+Two kinds of dimension, because "is this good?" has two kinds of answer:
+
+- **Quality, 1–5** — `wifi`, `power`, `seat`, `welcome`, `calls`. One end is simply
+  worse; nobody prefers unreliable wifi.
+- **Continua, −2…+2** — `sound` (hushed ←→ lively) and `pace` (lingering ←→ brisk).
+  Both poles are somebody's ideal, often the same person on different days. Scoring
+  these 1–5 was meaningless: "sound: 4" never said which direction.
+
+Because continua have no good end, profiles carry a **target** instead of a weight
+preference, and fit is distance from that target. Deep work wants hushed; Company wants
+lively; same number, opposite reading.
+
+| Profile | Wants |
+|---|---|
+| Deep work | hushed, lingering, plus seat/power/wifi |
+| Calls & meetings | `calls` and `wifi` high, sound leaning hushed |
+| Quick session | wifi + welcome, pace can be brisk |
+| Company | lively, welcoming — a room with something going on |
+
+Verified on real numbers: a wine bar scoring `sound: 1`, `pace: -2` reads **Best for
+company (3.6)**, where the old averaging model called the same place deep work.
+
+Below 70% coverage a profile prints "not enough scored to say" rather than a number.
+`rubric_version` is stamped so rewriting anchors won't mix old scores with new.
 
 Consistency comes from the anchors, not the numbers — a bare 1–5 drifts within a month
 and today's 4 becomes next spring's 3 with no way to tell which. So every dimension has

@@ -14,7 +14,13 @@
 
 import { writeFileSync } from 'node:fs';
 import { VOCAB, HOURS_TRUST, SOURCE_LABEL, type Vocab } from '../src/lib/vocab.ts';
-import { DIMENSIONS, PROFILES, RUBRIC_VERSION } from '../src/lib/rubric.ts';
+import {
+  QUALITIES,
+  CONTINUA,
+  PROFILES,
+  RUBRIC_VERSION,
+  continuumLabel,
+} from '../src/lib/rubric.ts';
 
 const HEADER = (kind: string) => `<!--
   GENERATED FILE — do not edit by hand.
@@ -46,18 +52,21 @@ ${rows}
 // --- the rubric (venue-level) ---------------------------------------------
 
 const rubricDoc = `
-## The rubric
+## Scoring
 
-Six dimensions, \`1\`–\`5\`, all optional, under a \`scores:\` block on the **venue**.
+All under a \`scores:\` block on the **venue**, scored once per place rather than
+per visit — outlets, seating, room noise and call etiquette are properties of the
+room, not of a Tuesday.
 
-Scored once per place, not per visit — outlets, seating, room noise and call
-etiquette are properties of the room, not of a Tuesday. Score against these
-sentences rather than by feel; that's what keeps a 4 in November meaning what a
-4 in March meant. Anchors are written at 1, 3 and 5; use 2 and 4 for "between
-these two."
+Two kinds of dimension, because "is this good?" has two kinds of answer.
 
-${DIMENSIONS.map(
-  (d) => `### \`${d.key}\` — ${d.question}
+### Quality — \`1\`–\`5\`, higher is better
+
+For things where one end is simply worse. Nobody prefers unreliable wifi.
+Anchors are at 1, 3 and 5; use 2 and 4 for "between these two."
+
+${QUALITIES.map(
+  (d) => `#### \`${d.key}\` — ${d.question}
 
 | | |
 | --- | --- |
@@ -66,14 +75,43 @@ ${DIMENSIONS.map(
 | **5** | ${d.anchors[5]} |
 `,
 ).join('\n')}
+### Continua — \`-2\`…\`+2\`, neither end is wrong
+
+For things where both poles are somebody's ideal, often the same person on
+different days. There is no "good" direction, so don't score these as if there
+were — pick the end the room actually sits at.
+
+${CONTINUA.map(
+  (d) => `#### \`${d.key}\` — ${d.question}
+
+**${d.low}** \`-2\` ←→ \`+2\` **${d.high}**
+
+| | |
+| --- | --- |
+| **-2** | ${d.anchors['-2']} |
+| **0** | ${d.anchors['0']} |
+| **+2** | ${d.anchors['2']} |
+`,
+).join('\n')}
 ### How they combine
 
-${PROFILES.map(
-  (p) =>
-    `- **${p.label}** — ${p.blurb}\n  ${Object.entries(p.weights)
-      .map(([d, w]) => `${d} ${Math.round((w as number) * 100)}%`)
-      .join(', ')}`,
-).join('\n')}
+Quality dimensions are weighted straight. On the continua each profile has a
+**target** rather than a preference for "high" — so the same score reads as a
+match or a mismatch depending on the kind of day being asked about.
+
+${PROFILES.map((p) => {
+  const q = Object.entries(p.qualities)
+    .map(([d, w]) => `${d} ${Math.round((w as number) * 100)}%`)
+    .join(', ');
+  const t = Object.entries(p.targets)
+    .map(([d, spec]) => {
+      const def = CONTINUA.find((c) => c.key === d)!;
+      const s = spec as { target: number; weight: number };
+      return `wants ${continuumLabel(def, s.target)} ${d} ${Math.round(s.weight * 100)}%`;
+    })
+    .join(', ');
+  return `- **${p.label}** — ${p.blurb}\n  ${[q, t].filter(Boolean).join(', ')}`;
+}).join('\n')}
 
 Skip anything you haven't tested. A profile refuses to compute below 70% coverage
 and prints "not enough scored to say" instead — leaving a dimension out is

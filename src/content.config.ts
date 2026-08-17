@@ -123,19 +123,24 @@ const venues = defineCollection({
     // refuse to compute below 70% coverage.
     scores: z
       .object({
+        // Quality — 1 is bad, 5 is good.
         wifi: z.number().min(1).max(5).optional(),
         power: z.number().min(1).max(5).optional(),
         seat: z.number().min(1).max(5).optional(),
-        sound: z.number().min(1).max(5).optional(),
         welcome: z.number().min(1).max(5).optional(),
         calls: z.number().min(1).max(5).optional(),
+        // Continua — −2 and +2 are both legitimate, just different days.
+        // sound: −2 hushed … +2 lively
+        // pace:  −2 lingering … +2 brisk
+        sound: z.number().int().min(-2).max(2).optional(),
+        pace: z.number().int().min(-2).max(2).optional(),
       })
       .optional(),
     scores_updated: DATE.optional(),
 
     // Stamped so that if the anchors are ever rewritten, old scores stay
     // comparable to each other rather than being silently mixed with new ones.
-    rubric_version: z.number().int().default(1),
+    rubric_version: z.number().int().default(2),
 
     url: z.string().url().optional(),
     phone: z.string().optional(),

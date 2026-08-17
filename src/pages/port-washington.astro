@@ -1,0 +1,172 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import {
+  DAYS,
+  DAY_LABEL,
+  formatRange,
+  formatDateShort,
+  gridState,
+  sortVisits,
+} from '../lib/hours';
+import {
+  itemListJsonLd,
+  faqJsonLd,
+  breadcrumbJsonLd,
+  hoursSentence,
+} from '../lib/seo';
+
+const venues = (await getCollection('venues')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+const visits = sortVisits(await getCollection('visits'));
+
+const callRooms = venues.filter((v) => v.data.calls_ok === 'rooms');
+const free = venues.filter((v) => v.data.cost === 'free');
+const openSunday = venues.filter((v) => v.data.hours.sun);
+const openMonday = venues.filter((v) => v.data.hours.mon);
+
+// Answer-shaped. These are the questions someone actually types, and the
+// answers are assembled from the same data the grid uses — so they can't drift.
+const faqs = [
+  {
+    q: 'Where can I work from in Port Washington, Wisconsin?',
+    a: `There are ${venues.length} places on this list: ${venues
+      .map((v) => v.data.name)
+      .join(', ')}. Each has been worked from in person, and hours are confirmed by hand rather than scraped.`,
+  },
+  {
+    q: 'What is open on a Monday in Port Washington?',
+    a:
+      openMonday.length === 0
+        ? 'Nothing on this list is open on a Monday.'
+        : `On Mondays: ${openMonday
+            .map((v) => `${v.data.name} (${formatRange(v.data.hours.mon)})`)
+            .join(', ')}. Several coffee places in town are closed Mondays, so the day tends to start later.`,
+  },
+  {
+    q: 'Where can I take a video call in Port Washington?',
+    a:
+      callRooms.length > 0
+        ? `${callRooms
+            .map((v) => v.data.name)
+            .join(' and ')} ${callRooms.length === 1 ? 'has' : 'have'} bookable rooms with a door, which is the hardest thing to find in a small town.`
+        : 'No venue on this list currently has a bookable room for calls. Outdoors at Upper Lake Park is the usual fallback.',
+  },
+  {
+    q: 'Is there anywhere free to work in Port Washington?',
+    a:
+      free.length > 0
+        ? `Yes — ${free.map((v) => v.data.name).join(', ')}. No purchase expected.`
+        : 'Everywhere on this list expects you to buy something.',
+  },
+  {
+    q: 'What is open on Sunday in Port Washington?',
+    a:
+      openSunday.length === 0
+        ? 'Nothing on this list is open on Sunday.'
+        : `On Sundays: ${openSunday
+            .map((v) => `${v.data.name} (${formatRange(v.data.hours.sun)})`)
+            .join(', ')}.`,
+  },
+];
+
+const description = `All ${venues.length} places to work in Port Washington, Wisconsin — opening hours for every day of the week, what's free, and where you can take a call.`;
+---
+
+<Layout
+  title="Working in Port Washington, Wisconsin — hours for every day"
+  description={description}
+  jsonLd={[
+    itemListJsonLd(venues, 'Places to work in Port Washington, Wisconsin'),
+    faqJsonLd(faqs),
+    breadcrumbJsonLd([
+      { name: 'Where to go, today', path: '/' },
+      { name: 'Port Washington', path: '/port-washington' },
+    ]),
+  ]}
+>
+  <h1>Working in Port Washington</h1>
+  <p class="lede">
+    A lakefront city of about 12,700 on Lake Michigan, half an hour north of Milwaukee.
+    Small enough that the list of places to work is short, and short enough that I've
+    been to all of them. Here's the whole week.
+  </p>
+
+  <h2>Hours, all week</h2>
+  <div class="grid-wrap">
+    <table class="grid">
+      <caption class="note" style="caption-side: bottom; text-align: left;">
+        Shaded means I've worked there on that day and written it up.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">&nbsp;</th>
+          {DAYS.map((d) => <th scope="col" class="day">{DAY_LABEL[d]}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {
+          venues.map((venue) => (
+            <tr>
+              <th scope="row"><a href={`/venues/${venue.id}`}>{venue.data.name}</a></th>
+              {DAYS.map((day) => {
+                const state = gridState(venue, day, visits);
+                return (
+                  <td>
+                    <a class={`cell ${state}`} href={`/venues/${venue.id}`}>
+                      <span class="time">{formatRange(venue.data.hours[day])}</span>
+                      {state === 'tested' && <span class="tag">worked here</span>}
+                    </a>
+                  </td>
+                );
+              })}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The short version</h2>
+  <ul class="stack">
+    {venues.map((v) => <li>{hoursSentence(v)}</li>)}
+  </ul>
+
+  <h2>Common questions</h2>
+  {
+    faqs.map((f) => (
+      <>
+        <h3>{f.q}</h3>
+        <p>{f.a}</p>
+      </>
+    ))
+  }
+
+  {
+    visits.length > 0 && (
+      <>
+        <h2>Recent writeups</h2>
+        <ul class="stack">
+          {visits.slice(0, 5).map((visit) => {
+            const venue = venues.find((v) => v.id === visit.data.venue.id);
+            return (
+              <li>
+                <a href={`/log/${visit.id}`}>{venue?.data.name ?? visit.data.venue.id}</a>
+                {visit.data.verdict && <> — {visit.data.verdict}</>}
+                <div class="meta">{formatDateShort(visit.data.date)}</div>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    )
+  }
+
+  <h2>Somewhere missing?</h2>
+  <p>
+    This list is short on purpose — everything on it is somewhere I've actually sat and
+    worked. If there's a place I've missed, or a corner of one of these that beats the
+    one I picked, <a href="mailto:hello@workinozaukee.org">tell me</a> and I'll go try it.
+  </p>
+</Layout>
