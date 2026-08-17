@@ -41,10 +41,16 @@ if [[ "${1:-}" == "--dry" ]]; then
 fi
 
 echo "==> Mirroring dist/ to ${REMOTE}"
+# --delete removes anything on the server that isn't in dist/. Leave Dreamhost's
+# own housekeeping files alone — .dh-diag is theirs, not ours, and deleting it
+# just makes their panel unhappy.
 lftp -e "
   set sftp:auto-confirm yes;
   open sftp://josepilove@iad1-shared-b8-12.dreamhost.com;
-  mirror -R --delete $DRY ./dist/ ${REMOTE};
+  mirror -R --delete $DRY \
+    --exclude-glob .dh-diag \
+    --exclude-glob .well-known/ \
+    ./dist/ ${REMOTE};
   bye
 "
 
