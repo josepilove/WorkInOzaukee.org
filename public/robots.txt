@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /todo
+
+Sitemap: https://workinozaukee.org/sitemap.xml

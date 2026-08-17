@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import {
+  formatDateShort,
+  daysSince,
+  visitsFor,
+  SOURCE_LABEL,
+  sourceTrust,
+} from '../../lib/hours';
+
+const venues = (await getCollection('venues')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+const visits = await getCollection('visits');
+const now = new Date();
+
+const byDistrict = venues.reduce<Record<string, typeof venues>>((acc, v) => {
+  (acc[v.data.district] ||= []).push(v);
+  return acc;
+}, {});
+---
+
+<Layout title="Places — Work in Ozaukee">
+  <h1>Places</h1>
+  <p class="lede">
+    Everywhere in Port Washington worth trying, grouped by where it is. Nothing here is
+    listed because it has wifi — it's listed because someone needs to sit down and get
+    through an afternoon.
+  </p>
+
+  {
+    Object.entries(byDistrict).map(([district, list]) => (
+      <>
+        <h2>{district.replace('-', ' ')}</h2>
+        <ul class="cards">
+          {list.map((v) => {
+            const count = visitsFor(v.id, visits).length;
+            return (
+              <li class="card">
+                <h3><a href={`/venues/${v.id}`}>{v.data.name}</a></h3>
+                <p>
+                  {v.data.type} · {v.data.cost.replace('-', ' ')}
+                  {v.data.calls_ok === 'rooms' && <> · bookable rooms for calls</>}
+                </p>
+                <p class="meta">
+                  <span class={`prov ${sourceTrust(v.data.hours_source)}`}>
+                    {SOURCE_LABEL[v.data.hours_source]}
+                  </span>{' '}
+                  · hours checked {formatDateShort(v.data.hours_checked)}
+                  {count > 0 && <> · {count} writeup{count === 1 ? '' : 's'}</>}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    ))
+  }
+</Layout>

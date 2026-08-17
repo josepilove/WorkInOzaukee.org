@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import {
+  formatDate,
+  seasonOf,
+  timeBucket,
+  duration,
+  formatTime,
+  DAY_LABEL,
+  dayKeyOf,
+} from '../../lib/hours';
+
+export async function getStaticPaths() {
+  const visits = await getCollection('visits');
+  return visits.map((visit) => ({ params: { slug: visit.id }, props: { visit } }));
+}
+
+const { visit } = Astro.props;
+const { Content } = await render(visit);
+
+const venues = await getCollection('venues');
+const venue = venues.find((v) => v.id === visit.data.venue.id);
+const d = visit.data;
+const zone = venue?.data.zones.find((z) => z.id === d.zone);
+---
+
+<Layout title={`${venue?.data.name ?? d.venue.id}, ${formatDate(d.date)}`}>
+  <h1>{venue?.data.name ?? d.venue.id}</h1>
+  <p class="lede">
+    {formatDate(d.date)}
+    {d.arrived && <> · {formatTime(d.arrived)}{d.left && <>–{formatTime(d.left)}</>}</>}
+    {zone && <> · {zone.name}</>}
+  </p>
+
+  <ul class="attrs">
+    <li><b>{DAY_LABEL[dayKeyOf(d.date)]}</b></li>
+    <li>{seasonOf(d.date)}</li>
+    {d.arrived && <li>{timeBucket(d.arrived)}</li>}
+    {duration(d.arrived, d.left) && <li>stayed {duration(d.arrived, d.left)}</li>}
+    {d.wifi && <li><b>wifi</b> {d.wifi}</li>}
+    {d.outlets && <li><b>outlets</b> {d.outlets}</li>}
+    {d.noise !== undefined && <li><b>noise</b> {d.noise}/5</li>}
+    {d.laptops !== undefined && <li><b>{d.laptops}</b> other laptops</li>}
+    {d.light && <li><b>light</b> {d.light}</li>}
+    {d.temp && <li><b>temp</b> {d.temp}</li>}
+    {d.weather && <li>{d.weather}</li>}
+  </ul>
+
+
+  {d.verdict && <p class="lede">{d.verdict}</p>}
+
+  <div class="prose"><Content /></div>
+
+  <p>
+    <a href={`/venues/${d.venue.id}`}>← All visits to {venue?.data.name ?? d.venue.id}</a>
+    {' · '}
+    <a href="/log">The whole log</a>
+  </p>
+</Layout>

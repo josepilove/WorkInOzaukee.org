@@ -1,0 +1,16 @@
+{
+  "name": "workinozaukee",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "vocab": "node --experimental-strip-types scripts/vocab.ts"
+  },
+  "dependencies": {
+    "astro": "^5.13.0"
+  }
+}

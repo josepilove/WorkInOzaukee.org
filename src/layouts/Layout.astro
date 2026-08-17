@@ -1,0 +1,304 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  noindex?: boolean;
+}
+const {
+  title,
+  description = 'A working guide to Port Washington, Wisconsin.',
+  noindex = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="alternate" type="application/rss+xml" title="Work in Ozaukee" href="/rss.xml" />
+  </head>
+  <body>
+    <header class="site">
+      <a href="/" class="wordmark">Work in Ozaukee</a>
+      <nav>
+        <a href="/">This week</a>
+        <a href="/log">Log</a>
+        <a href="/venues">Places</a>
+        <a href="/rubric">Scoring</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site">
+      <p>
+        Hand-checked in Port Washington, Wisconsin. Hours are confirmed in person or by
+        phone — never scraped, and always stamped with the date they were last checked.
+        Something wrong? <a href="mailto:hello@workinozaukee.org">Tell me</a> and I'll go look.
+      </p>
+      <p class="fine">
+        No account, no app, no social login. <a href="/rss.xml">RSS</a>
+      </p>
+    </footer>
+
+    <style is:global>
+      :root {
+        --ink: #1c1a17;
+        --ink-soft: #55504a;
+        --ink-faint: #8a837b;
+        --paper: #fbf9f5;
+        --rule: #e3ded5;
+        --accent: #1f5f4a;
+        --accent-soft: #e6f0eb;
+        --warn: #9a5b1e;
+        --warn-soft: #fbf0e2;
+        --closed: #f2efe9;
+        --radius: 6px;
+        --measure: 62rem;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { -webkit-text-size-adjust: 100%; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 16px/1.6 ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+        padding: 0 1.25rem;
+      }
+
+      main { max-width: var(--measure); margin: 0 auto; }
+
+      header.site {
+        max-width: var(--measure);
+        margin: 0 auto;
+        padding: 1.75rem 0 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.5rem;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .wordmark {
+        font-weight: 700;
+        font-size: 1.15rem;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        color: var(--ink);
+      }
+
+      header.site nav { display: flex; gap: 1.15rem; }
+
+      header.site nav a {
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 0.85rem;
+        text-decoration: none;
+        color: var(--ink-soft);
+      }
+      header.site nav a:hover { color: var(--accent); }
+
+      footer.site {
+        max-width: var(--measure);
+        margin: 4rem auto 0;
+        padding: 1.5rem 0 3rem;
+        border-top: 1px solid var(--rule);
+        font-size: 0.85rem;
+        color: var(--ink-soft);
+      }
+      footer.site p { margin: 0 0 0.5rem; }
+      footer.site .fine { color: var(--ink-faint); font-size: 0.8rem; }
+
+      h1 {
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        margin: 2rem 0 0.5rem;
+      }
+      h2 {
+        font-size: 1.3rem;
+        letter-spacing: -0.01em;
+        margin: 2.75rem 0 0.35rem;
+      }
+      h3 { font-size: 1.05rem; margin: 1.5rem 0 0.35rem; }
+
+      a { color: var(--accent); }
+
+      .lede { font-size: 1.1rem; color: var(--ink-soft); margin: 0 0 1rem; max-width: 44rem; }
+      .note { font-size: 0.85rem; color: var(--ink-faint); margin: 0.25rem 0 1rem; }
+
+      .sans {
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+
+      /* ---------- the grid ---------- */
+
+      .grid-wrap { overflow-x: auto; margin: 1rem 0 0.5rem; }
+
+      table.grid {
+        border-collapse: separate;
+        border-spacing: 3px;
+        width: 100%;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 0.82rem;
+      }
+      table.grid th {
+        text-align: left;
+        font-weight: 600;
+        color: var(--ink-soft);
+        padding: 0.2rem 0.4rem;
+        white-space: nowrap;
+      }
+      table.grid th.day { text-align: center; width: 4.6rem; }
+      table.grid td { padding: 0; }
+
+      .cell {
+        display: block;
+        padding: 0.45rem 0.3rem;
+        border-radius: var(--radius);
+        text-align: center;
+        line-height: 1.25;
+        text-decoration: none;
+        color: inherit;
+      }
+      .cell .time { display: block; font-size: 0.72rem; }
+      .cell .tag { display: block; font-size: 0.65rem; letter-spacing: 0.02em; }
+
+      /* Open hours are the point. A day with a writeup gets a quiet mark —
+         absence of the mark is not a defect, it's just absence. */
+      .cell.tested {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border: 1px solid #cfe2d9;
+        font-weight: 600;
+      }
+      .cell.tested .tag::before { content: '✓ '; }
+      .cell.untested {
+        background: #fff;
+        border: 1px solid var(--rule);
+        color: var(--ink-soft);
+      }
+      .cell.untested:hover { border-color: var(--accent); }
+      .cell.closed {
+        background: var(--closed);
+        border: 1px solid transparent;
+        color: var(--ink-faint);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.78rem;
+        color: var(--ink-soft);
+        margin: 0.5rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .legend li { display: flex; align-items: center; gap: 0.4rem; }
+      .swatch {
+        width: 0.9rem; height: 0.9rem; border-radius: 3px; display: inline-block;
+      }
+      .swatch.tested { background: var(--accent-soft); border: 1px solid #cfe2d9; }
+      .swatch.untested { background: #fff; border: 1px solid var(--rule); }
+      .swatch.closed { background: var(--closed); }
+
+      /* Private queues. Visually separated so it's obvious this isn't the site. */
+      .backstage {
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--warn);
+        background: #fff;
+        border-radius: var(--radius);
+        padding: 1rem 1.15rem;
+        margin: 1rem 0;
+      }
+      .backstage h2 { margin-top: 0; }
+
+      /* ---------- cards & lists ---------- */
+
+      .cards { display: grid; gap: 0.75rem; margin: 1rem 0; padding: 0; list-style: none; }
+
+      .card {
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        padding: 0.85rem 1rem;
+        background: #fff;
+      }
+      .card h3 { margin: 0 0 0.15rem; font-size: 1rem; }
+      .card p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+
+      .card.warn { border-color: #e8d4b4; background: var(--warn-soft); }
+
+      .stack { list-style: none; padding: 0; margin: 1rem 0; }
+      .stack > li {
+        padding: 0.7rem 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .stack > li:last-child { border-bottom: 0; }
+
+      .meta {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.78rem;
+        color: var(--ink-faint);
+      }
+
+      /* ---------- provenance ---------- */
+
+      .prov {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.78rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+      }
+      .prov.high { background: var(--accent-soft); color: var(--accent); }
+      .prov.medium { background: #f0ece3; color: var(--ink-soft); }
+      .prov.low { background: var(--warn-soft); color: var(--warn); }
+      .prov.low::before { content: '?'; font-weight: 700; }
+
+      /* ---------- attributes ---------- */
+
+      .attrs {
+        display: flex; flex-wrap: wrap; gap: 0.35rem;
+        list-style: none; padding: 0; margin: 0.5rem 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.75rem;
+      }
+      .attrs li {
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        padding: 0.1rem 0.55rem;
+        color: var(--ink-soft);
+        background: #fff;
+      }
+      .attrs li b { font-weight: 600; color: var(--ink); }
+
+      /* ---------- open now ---------- */
+
+      #open-now:empty { display: none; }
+      .status { font-weight: 600; }
+      .status.open { color: var(--accent); }
+      .status.degraded { color: var(--warn); }
+
+      .prose p { max-width: 40rem; }
+
+      @media (max-width: 34rem) {
+        body { padding: 0 0.9rem; }
+        header.site { padding-top: 1.25rem; }
+      }
+    </style>
+  </body>
+</html>

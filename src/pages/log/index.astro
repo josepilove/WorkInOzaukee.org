@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import {
+  formatDate,
+  sortVisits,
+  seasonOf,
+  timeBucket,
+  duration,
+  DAY_LABEL,
+  dayKeyOf,
+} from '../../lib/hours';
+
+const visits = sortVisits(await getCollection('visits'));
+const venues = await getCollection('venues');
+const nameOf = (id: string) => venues.find((v) => v.id === id)?.data.name ?? id;
+
+// Group by year-month so the log reads as a record of habit, not a feed.
+const groups = visits.reduce<Record<string, typeof visits>>((acc, v) => {
+  const key = v.data.date.slice(0, 7);
+  (acc[key] ||= []).push(v);
+  return acc;
+}, {});
+
+const monthLabel = (ym: string) => {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+---
+
+<Layout title="Log — Work in Ozaukee">
+  <h1>Log</h1>
+  <p class="lede">
+    Every session, dated. These entries are never revised — what a place was like on a
+    given Tuesday stays true, which is why this works where a directory rots.
+  </p>
+
+  {
+    visits.length === 0 ? (
+      <p class="note">Nothing logged yet.</p>
+    ) : (
+      Object.entries(groups).map(([ym, list]) => (
+        <>
+          <h2>{monthLabel(ym)}</h2>
+          <ul class="stack">
+            {list.map((v) => (
+              <li>
+                <a href={`/log/${v.id}`}>
+                  {nameOf(v.data.venue.id)}, {formatDate(v.data.date)}
+                </a>
+                {v.data.verdict && <div>{v.data.verdict}</div>}
+                <ul class="attrs">
+                  <li><b>{DAY_LABEL[dayKeyOf(v.data.date)]}</b></li>
+                  <li>{seasonOf(v.data.date)}</li>
+                  {v.data.arrived && <li>{timeBucket(v.data.arrived)}</li>}
+                  {duration(v.data.arrived, v.data.left) && (
+                    <li>{duration(v.data.arrived, v.data.left)}</li>
+                  )}
+                  {v.data.wifi && <li>wifi {v.data.wifi}</li>}
+                  {v.data.laptops !== undefined && <li>{v.data.laptops} laptops</li>}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </>
+      ))
+    )
+  }
+</Layout>

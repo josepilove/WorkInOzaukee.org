@@ -1,0 +1,149 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import {
+  DAYS,
+  DAY_LABEL,
+  formatRange,
+  formatDateShort,
+  gridState,
+  gapsByDay,
+  reverifyQueue,
+  daysSince,
+  visitsFor,
+  SOURCE_LABEL,
+} from '../lib/hours';
+
+const venues = (await getCollection('venues')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+const visits = await getCollection('visits');
+const now = new Date();
+
+// Days ranked by how little is confirmed, then by SCARCITY — fewest open places
+// first. A thin day is where the site earns its keep and where the gap actually
+// hurts; a day with six open cafes doesn't need you as badly.
+const byDay = gapsByDay(venues, visits)
+  .map((d) => ({
+    ...d,
+    missing: venues.filter((v) => gridState(v, d.day, visits) === 'untested'),
+  }))
+  .filter((d) => d.open > 0)
+  .sort((a, b) => a.tested - b.tested || a.open - b.open);
+
+const stale = reverifyQueue(venues, now);
+const neverVisited = venues.filter((v) => visitsFor(v.id, visits).length === 0);
+
+const untestedZones = venues.flatMap((v) =>
+  v.data.zones
+    .filter((z) => !visits.some((s) => s.data.venue.id === v.id && s.data.zone === z.id))
+    .map((z) => ({ venue: v, zone: z })),
+);
+---
+
+<Layout title="Backstage" noindex={true}>
+  <h1>Backstage</h1>
+  <p class="lede">
+    Not linked from the site and marked noindex. This is the chore list — everything
+    the public pages deliberately don't say out loud.
+  </p>
+
+  <div class="backstage">
+    <h2>Next trip</h2>
+    {
+      byDay[0] && (
+        <p>
+          <b>{DAY_LABEL[byDay[0].day]}</b> — {byDay[0].tested} of {byDay[0].open} open
+          places confirmed.
+          {byDay[0].missing.length > 0 && (
+            <>
+              {' '}Go to{' '}
+              {byDay[0].missing.map((v, i) => (
+                <>
+                  {i > 0 && ' or '}
+                  <a href={`/venues/${v.id}`}>{v.data.name}</a>
+                </>
+              ))}
+              , sit somewhere you haven't, write five sentences before you leave.
+            </>
+          )}
+        </p>
+      )
+    }
+  </div>
+
+  <h2>Coverage by day</h2>
+  <ul class="stack">
+    {
+      byDay.map((d) => (
+        <li>
+          <b>{DAY_LABEL[d.day]}</b> — {d.tested}/{d.open} confirmed
+          {d.missing.length > 0 && (
+            <div class="meta">
+              missing: {d.missing.map((v) => v.data.name).join(', ')}
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+
+  {
+    stale.length > 0 && (
+      <>
+        <h2>Hours to re-check</h2>
+        <p class="note">Not confirmed in the last 90 days.</p>
+        <ul class="stack">
+          {stale.map((v) => (
+            <li>
+              <a href={`/venues/${v.id}`}>{v.data.name}</a>
+              <div class="meta">
+                {formatDateShort(v.data.hours_checked)} ·{' '}
+                {daysSince(v.data.hours_checked, now)} days ·{' '}
+                {SOURCE_LABEL[v.data.hours_source]}
+                {v.data.phone && <> · {v.data.phone}</>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    neverVisited.length > 0 && (
+      <>
+        <h2>Listed but never written up</h2>
+        <ul class="stack">
+          {neverVisited.map((v) => (
+            <li>
+              <a href={`/venues/${v.id}`}>{v.data.name}</a>
+              <div class="meta">
+                open {DAYS.filter((d) => v.data.hours[d]).map((d) => DAY_LABEL[d]).join(', ')}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    untestedZones.length > 0 && (
+      <>
+        <h2>Seats not yet tried</h2>
+        <p class="note">
+          Cheapest possible entries — you already know the place, just sit somewhere else.
+        </p>
+        <ul class="stack">
+          {untestedZones.map(({ venue, zone }) => (
+            <li>
+              <a href={`/venues/${venue.id}`}>{venue.data.name}</a> — {zone.name}
+              {zone.notes && <div class="meta">{zone.notes}</div>}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</Layout>

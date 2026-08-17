@@ -1,0 +1,242 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import {
+  DAYS,
+  DAY_LABEL,
+  formatRange,
+  formatDate,
+  formatDateShort,
+  gridState,
+  daysSince,
+  isStale,
+  visitsFor,
+  duration,
+  timeBucket,
+  seasonOf,
+  SOURCE_LABEL,
+  sourceTrust,
+} from '../../lib/hours';
+import {
+  DIMENSIONS,
+  PROFILES,
+  profileScore,
+  formatScore,
+  hasAnyScore,
+  verdictFor,
+} from '../../lib/rubric';
+
+export async function getStaticPaths() {
+  const venues = await getCollection('venues');
+  return venues.map((venue) => ({ params: { slug: venue.id }, props: { venue } }));
+}
+
+const { venue } = Astro.props;
+const { Content } = await render(venue);
+
+const allVisits = await getCollection('visits');
+const visits = visitsFor(venue.id, allVisits);
+const now = new Date();
+const stale = isStale(venue, now);
+const trust = sourceTrust(venue.data.hours_source);
+
+const testedDays = DAYS.filter((d) => gridState(venue, d, allVisits) === 'tested');
+const untestedDays = DAYS.filter((d) => gridState(venue, d, allVisits) === 'untested');
+
+const scores = venue.data.scores ?? {};
+const scored = hasAnyScore(scores);
+
+const roommate = venue.data.shares_space_with
+  ? (await getCollection('venues')).find((v) => v.id === venue.data.shares_space_with)
+  : undefined;
+---
+
+<Layout title={`${venue.data.name} — Work in Ozaukee`}>
+  <h1>{venue.data.name}</h1>
+  <p class="lede">
+    {venue.data.type === 'cafe' ? 'Cafe' : venue.data.type === 'library' ? 'Library' : venue.data.type}
+    {venue.data.address && <> · {venue.data.address}</>}
+  </p>
+
+  <ul class="attrs">
+    <li><b>Cost</b> {venue.data.cost.replace('-', ' ')}</li>
+    <li><b>Calls</b> {venue.data.calls_ok === 'rooms' ? 'bookable rooms' : venue.data.calls_ok}</li>
+    <li><b>{venue.data.indoor ? 'Indoor' : 'Outdoor'}</b></li>
+    <li><b>Season</b> {venue.data.seasons.length === 4 ? 'year-round' : venue.data.seasons.join(', ')}</li>
+    {venue.data.url && <li><a href={venue.data.url}>website</a></li>}
+    {venue.data.phone && <li>{venue.data.phone}</li>}
+  </ul>
+
+  {
+    roommate && (
+      <p class="card">
+        Shares this address with <a href={`/venues/${roommate.id}`}>{roommate.data.name}</a>,
+        which has the other half of the clock. Between them the room is open far more of
+        the week than either one alone.
+      </p>
+    )
+  }
+
+  <h2>Hours</h2>
+  <p>
+    <span class={`prov ${trust}`}>{SOURCE_LABEL[venue.data.hours_source]}</span>
+    <span class="meta">
+      · last checked {formatDateShort(venue.data.hours_checked)}
+      ({daysSince(venue.data.hours_checked, now)} days ago){stale && (
+        <> — old enough that I'd call ahead</>
+      )}
+    </span>
+  </p>
+
+  <div class="grid-wrap">
+    <table class="grid">
+      <thead>
+        <tr>{DAYS.map((d) => <th class="day">{DAY_LABEL[d]}</th>)}</tr>
+      </thead>
+      <tbody>
+        <tr>
+          {
+            DAYS.map((day) => {
+              const state = gridState(venue, day, allVisits);
+              return (
+                <td>
+                  <span class={`cell ${state}`}>
+                    <span class="time">{formatRange(venue.data.hours[day])}</span>
+                    {state === 'tested' && <span class="tag">worked here</span>}
+                  </span>
+                </td>
+              );
+            })
+          }
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {
+    venue.data.exceptions.length > 0 && (
+      <>
+        <h3>Known exceptions</h3>
+        <ul class="stack">
+          {venue.data.exceptions.map((e) => (
+            <li>
+              <b>{formatDateShort(e.date)}</b> — {e.status}. {e.reason}
+            </li>
+          ))}
+        </ul>
+        <p class="note">
+          Best-effort only. One-off closures are never guaranteed complete.
+        </p>
+      </>
+    )
+  }
+
+  <div class="prose"><Content /></div>
+
+  {
+    venue.data.zones.length > 0 && (
+      <>
+        <h2>Where to sit</h2>
+        <ul class="cards">
+          {venue.data.zones.map((z) => {
+            const zoneVisits = visits.filter((v) => v.data.zone === z.id);
+            return (
+              <li class="card">
+                <h3>{z.name}</h3>
+                {z.notes && <p>{z.notes}</p>}
+                {zoneVisits.length > 0 && (
+                  <p class="meta">
+                    {zoneVisits.length} writeup{zoneVisits.length === 1 ? '' : 's'}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    scored && (
+      <>
+        <h2>How it scores</h2>
+        <p class="note">
+          Judged against <a href="/rubric">the same rubric</a> every place here gets
+          {venue.data.scores_updated && (
+            <> · last revisited {formatDateShort(venue.data.scores_updated)}</>
+          )}
+        </p>
+
+        <ul class="stack">
+          {PROFILES.map((p) => {
+            const s = profileScore(scores, p);
+            return (
+              <li>
+                <b>{p.label}</b>{' '}
+                {s === null ? (
+                  <span class="meta">not enough scored to say</span>
+                ) : (
+                  <>
+                    {formatScore(s)}/5 <span class="meta">— {verdictFor(s)}</span>
+                  </>
+                )}
+                <div class="meta">{p.blurb}</div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <ul class="attrs">
+          {DIMENSIONS.map((dim) =>
+            typeof scores[dim.key] === 'number' ? (
+              <li>
+                <b>{dim.label}</b> {scores[dim.key]}
+              </li>
+            ) : null,
+          )}
+        </ul>
+      </>
+    )
+  }
+
+  <h2>Visits</h2>
+  {
+    visits.length === 0 ? (
+      <p class="note">
+        No writeup yet — it's on my list. If you've worked here,{' '}
+        <a href="mailto:hello@workinozaukee.org">tell me what it's like</a>.
+      </p>
+    ) : (
+      <>
+        <p class="note">
+          Written up on {testedDays.map((d) => DAY_LABEL[d]).join(', ')}.
+        </p>
+        <ul class="stack">
+          {visits.map((v) => (
+            <li>
+              <a href={`/log/${v.id}`}>{formatDate(v.data.date)}</a>
+              {v.data.verdict && <> — {v.data.verdict}</>}
+              <ul class="attrs">
+                {v.data.arrived && (
+                  <li>
+                    <b>{timeBucket(v.data.arrived)}</b>
+                    {duration(v.data.arrived, v.data.left) && <> · {duration(v.data.arrived, v.data.left)}</>}
+                  </li>
+                )}
+                <li><b>{seasonOf(v.data.date)}</b></li>
+                {v.data.zone && <li>{v.data.zone}</li>}
+                {v.data.wifi && <li><b>wifi</b> {v.data.wifi}</li>}
+                {v.data.outlets && <li><b>outlets</b> {v.data.outlets}</li>}
+                {v.data.noise !== undefined && <li><b>noise</b> {v.data.noise}/5</li>}
+                {v.data.laptops !== undefined && <li><b>{v.data.laptops}</b> other laptops</li>}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p><a href="/">← The week</a></p>
+</Layout>
