@@ -125,6 +125,43 @@ export function itemListJsonLd(venues: Venue[], name: string) {
   };
 }
 
+const escapeHtml = (s: string) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+/**
+ * Turn venue names inside a sentence into links to the venue's own site.
+ *
+ * The same answer string feeds both the visible page and the FAQPage JSON-LD.
+ * Structured data must stay plain text, so linking happens only here, on the
+ * rendered side — one source of truth, no chance of the two drifting.
+ *
+ * Longest name first, so "Sacred Bean Coffee Co." isn't clipped by a shorter
+ * name that happens to be a prefix of it.
+ */
+export function linkifyVenues(text: string, venues: Venue[]): string {
+  let html = escapeHtml(text);
+  const ordered = [...venues].sort((a, b) => b.data.name.length - a.data.name.length);
+
+  for (const v of ordered) {
+    const name = escapeHtml(v.data.name);
+    if (!html.includes(name)) continue;
+
+    const external = v.data.url;
+    const anchor = external
+      ? `<a href="${escapeHtml(external)}" class="ext" target="_blank" rel="noopener noreferrer">${name}<svg class="ext-icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 2h6v6M10 2 3 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only"> (opens their website in a new tab)</span></a>`
+      : `<a href="/venues/${v.id}">${name}</a>`;
+
+    // Replace only the first mention — repeat links in one answer are noise.
+    html = html.replace(name, anchor);
+  }
+
+  return html;
+}
+
 export function faqJsonLd(qas: { q: string; a: string }[]) {
   return {
     '@context': 'https://schema.org',

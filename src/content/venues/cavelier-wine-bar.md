@@ -26,10 +26,7 @@ phone: (262) 235-1034
 
 Same address as Sacred Bean, opposite half of the day — Cavelier takes over at three.
 
-**Open Monday afternoon**, which matters more than it sounds. If the Monday problem is
-that nothing's open, the honest answer might be that the day just starts later: coffee
-places are shut, but there's a room on East Jackson from 3pm.
-
-Worth finding out whether a wine bar at 3:30 on a Monday is a workable place to finish
-an afternoon, or whether that's a nice idea that falls apart in practice. Either
-answer is a good entry.
+The only place on the list that's open into the evening, which makes it the option when
+the afternoon runs long. Worth finding out whether a wine bar at 3:30 is a workable
+place to finish a day's work, or whether that's a nice idea that falls apart in
+practice. Either answer is a good entry.

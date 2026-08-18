@@ -14,6 +14,7 @@ import {
   faqJsonLd,
   breadcrumbJsonLd,
   hoursSentence,
+  linkifyVenues,
 } from '../lib/seo';
 
 const venues = (await getCollection('venues')).sort((a, b) =>
@@ -44,7 +45,7 @@ const faqs = [
         ? 'Nothing on this list is open on a Monday.'
         : `On Mondays: ${openMonday
             .map((v) => `${v.data.name} (${formatRange(v.data.hours.mon)})`)
-            .join(', ')}. Several coffee places in town are closed Mondays, so the day tends to start later.`,
+            .join(', ')}.`,
   },
   {
     q: 'Where can I take a video call in Port Washington?',
@@ -146,7 +147,7 @@ const description = `All ${venues.length} places to work in Port Washington, Wis
 
   <h2>The short version</h2>
   <ul class="stack">
-    {venues.map((v) => <li>{hoursSentence(v)}</li>)}
+    {venues.map((v) => <li set:html={linkifyVenues(hoursSentence(v), venues)} />)}
   </ul>
 
   <h2>Common questions</h2>
@@ -154,7 +155,7 @@ const description = `All ${venues.length} places to work in Port Washington, Wis
     faqs.map((f) => (
       <>
         <h3>{f.q}</h3>
-        <p>{f.a}</p>
+        <p set:html={linkifyVenues(f.a, venues)} />
       </>
     ))
   }

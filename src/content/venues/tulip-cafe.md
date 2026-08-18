@@ -48,8 +48,5 @@ order. That's the thing that makes a long session work.
 Four distinct zones, which is more than anywhere else in town has. The bar up front and
 the group areas are written up below; the other two still need a morning each.
 
-Closed Mondays, which matters — it means the Monday options in town are Cavelier from
-three, and the park.
-
 Being off the main downtown strip is worth noting: if parking is easy and it's quiet on
 a weekday, that's a real advantage over Franklin Street.
