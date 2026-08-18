@@ -24,6 +24,7 @@ const visits = sortVisits(await getCollection('visits'));
 const callRooms = venues.filter((v) => v.data.calls_ok === 'rooms');
 const free = venues.filter((v) => v.data.cost === 'free');
 const meals = venues.filter((v) => v.data.serves.includes('meals'));
+const quietish = venues.filter((v) => ['yes', 'quietly'].includes(v.data.calls_ok));
 const openSunday = venues.filter((v) => v.data.hours.sun);
 const openMonday = venues.filter((v) => v.data.hours.mon);
 
@@ -52,7 +53,13 @@ const faqs = [
         ? `${callRooms
             .map((v) => v.data.name)
             .join(' and ')} ${callRooms.length === 1 ? 'has' : 'have'} bookable rooms with a door, which is the hardest thing to find in a small town.`
-        : 'No venue on this list currently has a bookable room for calls. Outdoors at Upper Lake Park is the usual fallback.',
+        : `No venue on this list currently has a room you can shut a door on.${
+            quietish.length
+              ? ` ${quietish
+                  .map((v) => v.data.name)
+                  .join(' and ')} ${quietish.length === 1 ? 'is' : 'are'} the least bad option — step outside or wait for a lull.`
+              : ' Stepping outside is the only option.'
+          }`,
   },
   {
     q: 'Where can I work and get lunch in Port Washington?',

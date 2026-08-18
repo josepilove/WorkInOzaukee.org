@@ -42,7 +42,7 @@ Roughly where in town. Groups the Places page.
 | --- | --- |
 | `downtown` | Franklin St and the blocks around it. |
 | `marina` | Harbor and Old Theater Square side. |
-| `lakefront` | On the lake — Upper Lake Park, the bluff, the beach. |
+| `lakefront` | On the lake — the parks up on the bluff, the beach. |
 | `north-side` | North of downtown. |
 | `south-side` | South of downtown, incl. S Spring St. |
 | `west-side` | West of downtown, incl. W Grand Ave. |

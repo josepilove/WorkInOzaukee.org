@@ -43,7 +43,7 @@ export const VENUE_TYPES = [
 export const DISTRICTS = [
   { value: 'downtown', hint: 'Franklin St and the blocks around it.' },
   { value: 'marina', hint: 'Harbor and Old Theater Square side.' },
-  { value: 'lakefront', hint: 'On the lake — Upper Lake Park, the bluff, the beach.' },
+  { value: 'lakefront', hint: 'On the lake — the parks up on the bluff, the beach.' },
   { value: 'north-side', hint: 'North of downtown.' },
   { value: 'south-side', hint: 'South of downtown, incl. S Spring St.' },
   { value: 'west-side', hint: 'West of downtown, incl. W Grand Ave.' },
