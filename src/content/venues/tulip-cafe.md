@@ -16,14 +16,29 @@ hours:
   sun: ["09:00", "15:00"]
 hours_checked: 2026-08-18
 hours_source: first-person
-calls_ok: unknown
-zones: []
+calls_ok: no
+scores:
+  power: 4
+  seat: 4
+  calls: 1
+  sound: 1
+scores_updated: 2026-08-18
+zones:
+  - id: front-bar
+    name: The bar up front
+    notes: Bar-height chairs, plenty of outlets. Good for solo work. Too open for a call.
+  - id: group-tables
+    name: Group areas
+    notes: A couple of separate spots that seat up to six. Haven't worked from either yet.
 url: https://madebyhollander.com/pages/visit-us
 ---
 
 Inside the Hollander Chocolate headquarters on the south side — a converted car
 dealership, which usually means high ceilings, hard surfaces, and a lot of light.
 Opened October 2025.
+
+Four distinct zones, which is more than anywhere else in town has. The bar up front and
+the group areas are written up below; the other two still need a morning each.
 
 Closed Mondays, which matters — it means the Monday options in town are Cavelier from
 three, and the park.
