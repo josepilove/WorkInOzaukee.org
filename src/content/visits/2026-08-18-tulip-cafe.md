@@ -16,5 +16,10 @@ loud, though the music isn't too loud where I am today.
 I appreciate that the furniture is all pretty substantial. There are a couple of
 different areas that are good for meeting with up to six people.
 
+Never had a problem with the wifi. The vibe is more social than heads-down. I plan to
+sit here for two hours and I'll get two coffees in that time, which feels like the
+right trade. Lots of people getting things to go, some staying for breakfast, and
+others in for multiple hours.
+
 Confirmed the hours at the counter: closed Mondays, 7–3 the rest of the week, 9–3 on
 Sunday.

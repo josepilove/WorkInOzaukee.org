@@ -18,10 +18,13 @@ hours_checked: 2026-08-18
 hours_source: first-person
 calls_ok: no
 scores:
+  wifi: 4
   power: 4
   seat: 4
+  welcome: 4
   calls: 1
   sound: 1
+  pace: 0
 scores_updated: 2026-08-18
 zones:
   - id: front-bar
