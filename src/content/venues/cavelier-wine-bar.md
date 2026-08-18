@@ -26,7 +26,5 @@ phone: (262) 235-1034
 
 Same address as Sacred Bean, opposite half of the day — Cavelier takes over at three.
 
-The only place on the list that's open into the evening, which makes it the option when
-the afternoon runs long. Worth finding out whether a wine bar at 3:30 is a workable
-place to finish a day's work, or whether that's a nice idea that falls apart in
-practice. Either answer is a good entry.
+The only place on the list open into the evening, which makes it the option when the
+afternoon runs long.

@@ -72,6 +72,28 @@ export const SERVES = [
   { value: 'alcohol', hint: 'Beer, wine, cocktails.' },
 ] as const;
 
+/**
+ * Parking, from the point of view of someone about to sit for three hours.
+ * The question isn't "is there parking," it's "will I find a spot and can I
+ * leave the car there."
+ */
+export const PARKING = [
+  { value: 'lot', hint: 'Its own lot. Park and forget about it.' },
+  { value: 'street-easy', hint: 'On-street, and there is usually a spot out front.' },
+  { value: 'street-tight', hint: 'On-street, expect to circle — worse in summer and on weekends.' },
+  { value: 'ramp', hint: 'Public ramp or municipal lot within a short walk.' },
+  { value: 'none', hint: 'Nowhere practical to leave a car.' },
+] as const;
+
+/** Short reader-facing phrasing. The vocab value is for authoring, not display. */
+export const PARKING_LABEL: Record<string, string> = {
+  lot: 'its own lot',
+  'street-easy': 'street, usually easy',
+  'street-tight': 'street, can be tight',
+  ramp: 'public ramp nearby',
+  none: 'nowhere practical',
+};
+
 export const CALLS_OK = [
   { value: 'yes', hint: 'Take a call at your seat. Nobody cares.' },
   { value: 'quietly', hint: 'Possible if you keep your voice down or wait for a lull.' },
@@ -152,6 +174,7 @@ export const VOCAB: Vocab[] = [
   { field: 'district', applies: 'venue', required: false, about: 'Roughly where in town. Groups the Places page.', terms: DISTRICTS },
   { field: 'cost', applies: 'venue', required: false, about: 'What it costs to sit there.', terms: COSTS },
   { field: 'serves', applies: 'venue', required: false, about: 'What you can buy. A list. Leave empty if nothing.', terms: SERVES },
+  { field: 'parking', applies: 'venue', required: false, about: 'Whether you will find a spot and can leave the car for a few hours.', terms: PARKING },
   { field: 'calls_ok', applies: 'venue', required: false, about: 'Whether you can take a call.', terms: CALLS_OK },
   { field: 'hours_source', applies: 'venue', required: false, about: 'Where the hours came from. Drives how much readers are told to trust them.', terms: HOURS_SOURCES },
   { field: 'seasons', applies: 'venue', required: false, about: 'When the place is usable at all. A list. Outdoor spots are not year-round.', terms: SEASONS },

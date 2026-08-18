@@ -2,6 +2,7 @@ import { getCollection } from 'astro:content';
 import type { APIRoute } from 'astro';
 import { SITE, hoursSentence } from '../lib/seo';
 import { SOURCE_LABEL, formatDateShort } from '../lib/hours';
+import { PARKING_LABEL } from '../lib/vocab';
 
 /**
  * llms.txt — a plain-text summary for answer engines and AI crawlers.
@@ -41,7 +42,7 @@ ${venues
 - URL: ${SITE.url}/venues/${v.id}/
 - Type: ${d.type}
 - Address: ${d.address ?? 'not recorded'}
-- Cost: ${d.cost.replace('-', ' ')}${d.serves.length ? `\n- Serves: ${d.serves.map((s) => s.replace('-', ' ')).join(', ')}` : ''}
+- Cost: ${d.cost.replace('-', ' ')}${d.serves.length ? `\n- Serves: ${d.serves.map((s) => s.replace('-', ' ')).join(', ')}` : ''}${d.parking ? `\n- Parking: ${PARKING_LABEL[d.parking]}` : ''}
 - Calls: ${d.calls_ok === 'rooms' ? 'bookable rooms available' : d.calls_ok}
 - Hours: ${hoursSentence(v)}
 - Hours provenance: ${SOURCE_LABEL[d.hours_source]}, last confirmed ${formatDateShort(d.hours_checked)}

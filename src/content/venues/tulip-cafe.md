@@ -17,6 +17,7 @@ hours:
 hours_checked: 2026-08-18
 hours_source: first-person
 serves: [coffee, other-drinks, meals, snacks]
+parking: lot
 calls_ok: no
 scores:
   wifi: 4
@@ -33,7 +34,7 @@ zones:
     notes: Bar-height chairs, plenty of outlets. Good for solo work. Too open for a call.
   - id: group-tables
     name: Group areas
-    notes: A couple of separate spots that seat up to six. Haven't worked from either yet.
+    notes: A couple of separate spots that seat up to six.
 url: https://madebyhollander.com/pages/visit-us
 ---
 
@@ -45,8 +46,8 @@ The coffee is very good, and there's enough beyond it — non-coffee drinks, rea
 snacks — that you can sit through a whole morning without running out of reasons to
 order. That's the thing that makes a long session work.
 
-Four distinct zones, which is more than anywhere else in town has. The bar up front and
-the group areas are written up below; the other two still need a morning each.
+Four distinct zones, which is more than anywhere else in town has — a bar up front, a
+couple of areas that seat a group, and quieter corners besides.
 
-Being off the main downtown strip is worth noting: if parking is easy and it's quiet on
-a weekday, that's a real advantage over Franklin Street.
+Being off the main downtown strip turns out to be the advantage. There's a proper lot,
+so you're not circling Franklin Street looking for a space before you've even started.

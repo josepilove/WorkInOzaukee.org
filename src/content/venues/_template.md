@@ -15,6 +15,7 @@ indoor: true
 seasons: [winter, spring, summer, fall]   # drop seasons for outdoor spots
 cost: purchase-expected    # free purchase-expected membership paid
 serves: [coffee, snacks]   # coffee other-drinks meals snacks alcohol — omit if nothing
+parking: street-easy       # lot street-easy street-tight ramp none
 calls_ok: unknown          # yes quietly rooms no unknown
 
 # All seven days required. `null` means closed — so "closed" is always

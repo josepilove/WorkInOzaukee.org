@@ -71,6 +71,18 @@ What you can buy. A list. Leave empty if nothing.
 | `snacks` | Pastries, bakery, something to pick at. |
 | `alcohol` | Beer, wine, cocktails. |
 
+## `parking`
+
+Whether you will find a spot and can leave the car for a few hours.
+
+| value | when to use it |
+| --- | --- |
+| `lot` | Its own lot. Park and forget about it. |
+| `street-easy` | On-street, and there is usually a spot out front. |
+| `street-tight` | On-street, expect to circle — worse in summer and on weekends. |
+| `ramp` | Public ramp or municipal lot within a short walk. |
+| `none` | Nowhere practical to leave a car. |
+
 ## `calls_ok`
 
 Whether you can take a call.

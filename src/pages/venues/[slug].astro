@@ -30,6 +30,7 @@ import {
   continuumPercent,
 } from '../../lib/rubric';
 import { venueJsonLd, breadcrumbJsonLd, hoursSentence } from '../../lib/seo';
+import { PARKING_LABEL } from '../../lib/vocab';
 
 export async function getStaticPaths() {
   const venues = await getCollection('venues');
@@ -90,6 +91,7 @@ const description = `${venue.data.name} in Port Washington, Wisconsin as a place
     {venue.data.serves.length > 0 && (
       <li><b>Serves</b> {venue.data.serves.map((s) => s.replace('-', ' ')).join(', ')}</li>
     )}
+    {venue.data.parking && <li><b>Parking</b> {PARKING_LABEL[venue.data.parking]}</li>}
     <li><b>Calls</b> {venue.data.calls_ok === 'rooms' ? 'bookable rooms' : venue.data.calls_ok}</li>
     <li><b>{venue.data.indoor ? 'Indoor' : 'Outdoor'}</b></li>
     <li><b>Season</b> {venue.data.seasons.length === 4 ? 'year-round' : venue.data.seasons.join(', ')}</li>
@@ -220,15 +222,10 @@ const description = `${venue.data.name} in Port Washington, Wisconsin as a place
     )
   }
 
-  <h2>Visits</h2>
   {
-    visits.length === 0 ? (
-      <p class="note">
-        No writeup yet — it's on my list. If you've worked here,{' '}
-        <a href="mailto:hello@workinozaukee.org">tell me what it's like</a>.
-      </p>
-    ) : (
+    visits.length > 0 && (
       <>
+        <h2>Visits</h2>
         <p class="note">Written up on {testedDays.map((d) => DAY_LABEL[d]).join(', ')}.</p>
         <ul class="stack">
           {visits.map((v) => (
@@ -255,6 +252,11 @@ const description = `${venue.data.name} in Port Washington, Wisconsin as a place
       </>
     )
   }
+
+  <p class="note">
+    Worked here? <a href="mailto:hello@workinozaukee.org">Tell me what it's like</a> —
+    especially if you've found a better seat than the one I picked.
+  </p>
 
   <p><a href="/port-washington">← Everywhere in Port Washington</a></p>
 </Layout>

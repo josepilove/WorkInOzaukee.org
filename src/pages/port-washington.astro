@@ -26,6 +26,7 @@ const callRooms = venues.filter((v) => v.data.calls_ok === 'rooms');
 const free = venues.filter((v) => v.data.cost === 'free');
 const meals = venues.filter((v) => v.data.serves.includes('meals'));
 const quietish = venues.filter((v) => ['yes', 'quietly'].includes(v.data.calls_ok));
+const lots = venues.filter((v) => v.data.parking === 'lot');
 const openSunday = venues.filter((v) => v.data.hours.sun);
 const openMonday = venues.filter((v) => v.data.hours.mon);
 
@@ -70,6 +71,15 @@ const faqs = [
             .map((v) => v.data.name)
             .join(' and ')} ${meals.length === 1 ? 'serves' : 'serve'} real food, not just pastries — so you can sit through a whole session without packing up to eat.`
         : 'None of the places on this list serve full meals yet.',
+  },
+  {
+    q: 'Where can I park while working in Port Washington?',
+    a:
+      lots.length > 0
+        ? `${lots
+            .map((v) => v.data.name)
+            .join(' and ')} ${lots.length === 1 ? 'has its own lot' : 'have their own lots'}, so you can leave the car for a few hours without thinking about it. Everywhere else is street parking downtown.`
+        : 'Everywhere on this list is street parking downtown.',
   },
   {
     q: 'Is there anywhere free to work in Port Washington?',

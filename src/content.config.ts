@@ -6,6 +6,7 @@ import {
   DISTRICTS,
   COSTS,
   SERVES,
+  PARKING,
   CALLS_OK,
   HOURS_SOURCES,
   SEASONS,
@@ -81,6 +82,8 @@ const venues = defineCollection({
 
     // What you can buy. Availability only — whether it's any good belongs in prose.
     serves: z.array(z.enum(values(SERVES))).default([]),
+
+    parking: z.enum(values(PARKING)).optional(),
 
     hours: z.object(hoursShape),
 
