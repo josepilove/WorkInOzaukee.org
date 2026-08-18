@@ -41,7 +41,7 @@ ${venues
 - URL: ${SITE.url}/venues/${v.id}/
 - Type: ${d.type}
 - Address: ${d.address ?? 'not recorded'}
-- Cost: ${d.cost.replace('-', ' ')}
+- Cost: ${d.cost.replace('-', ' ')}${d.serves.length ? `\n- Serves: ${d.serves.map((s) => s.replace('-', ' ')).join(', ')}` : ''}
 - Calls: ${d.calls_ok === 'rooms' ? 'bookable rooms available' : d.calls_ok}
 - Hours: ${hoursSentence(v)}
 - Hours provenance: ${SOURCE_LABEL[d.hours_source]}, last confirmed ${formatDateShort(d.hours_checked)}

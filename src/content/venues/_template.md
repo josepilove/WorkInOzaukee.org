@@ -14,6 +14,7 @@ address: 000 N Franklin St, Port Washington, WI 53074
 indoor: true
 seasons: [winter, spring, summer, fall]   # drop seasons for outdoor spots
 cost: purchase-expected    # free purchase-expected membership paid
+serves: [coffee, snacks]   # coffee other-drinks meals snacks alcohol — omit if nothing
 calls_ok: unknown          # yes quietly rooms no unknown
 
 # All seven days required. `null` means closed — so "closed" is always

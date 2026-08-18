@@ -59,6 +59,18 @@ What it costs to sit there.
 | `membership` | Requires signing up. |
 | `paid` | Per-day or per-hour charge. |
 
+## `serves`
+
+What you can buy. A list. Leave empty if nothing.
+
+| value | when to use it |
+| --- | --- |
+| `coffee` | Espresso drinks, drip, the usual. |
+| `other-drinks` | Tea, smoothies, soda — something for people who are done with coffee. |
+| `meals` | Real food you could call lunch. |
+| `snacks` | Pastries, bakery, something to pick at. |
+| `alcohol` | Beer, wine, cocktails. |
+
 ## `calls_ok`
 
 Whether you can take a call.

@@ -16,6 +16,7 @@ hours:
   sun: ["09:00", "15:00"]
 hours_checked: 2026-08-18
 hours_source: first-person
+serves: [coffee, other-drinks, meals, snacks]
 calls_ok: no
 scores:
   wifi: 4
@@ -39,6 +40,10 @@ url: https://madebyhollander.com/pages/visit-us
 Inside the Hollander Chocolate headquarters on the south side — a converted car
 dealership, which usually means high ceilings, hard surfaces, and a lot of light.
 Opened October 2025.
+
+The coffee is very good, and there's enough beyond it — non-coffee drinks, real meals,
+snacks — that you can sit through a whole morning without running out of reasons to
+order. That's the thing that makes a long session work.
 
 Four distinct zones, which is more than anywhere else in town has. The bar up front and
 the group areas are written up below; the other two still need a morning each.

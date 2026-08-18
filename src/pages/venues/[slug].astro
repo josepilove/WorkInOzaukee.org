@@ -87,6 +87,9 @@ const description = `${venue.data.name} in Port Washington, Wisconsin as a place
 
   <ul class="attrs">
     <li><b>Cost</b> {venue.data.cost.replace('-', ' ')}</li>
+    {venue.data.serves.length > 0 && (
+      <li><b>Serves</b> {venue.data.serves.map((s) => s.replace('-', ' ')).join(', ')}</li>
+    )}
     <li><b>Calls</b> {venue.data.calls_ok === 'rooms' ? 'bookable rooms' : venue.data.calls_ok}</li>
     <li><b>{venue.data.indoor ? 'Indoor' : 'Outdoor'}</b></li>
     <li><b>Season</b> {venue.data.seasons.length === 4 ? 'year-round' : venue.data.seasons.join(', ')}</li>

@@ -23,6 +23,7 @@ const visits = sortVisits(await getCollection('visits'));
 
 const callRooms = venues.filter((v) => v.data.calls_ok === 'rooms');
 const free = venues.filter((v) => v.data.cost === 'free');
+const meals = venues.filter((v) => v.data.serves.includes('meals'));
 const openSunday = venues.filter((v) => v.data.hours.sun);
 const openMonday = venues.filter((v) => v.data.hours.mon);
 
@@ -52,6 +53,15 @@ const faqs = [
             .map((v) => v.data.name)
             .join(' and ')} ${callRooms.length === 1 ? 'has' : 'have'} bookable rooms with a door, which is the hardest thing to find in a small town.`
         : 'No venue on this list currently has a bookable room for calls. Outdoors at Upper Lake Park is the usual fallback.',
+  },
+  {
+    q: 'Where can I work and get lunch in Port Washington?',
+    a:
+      meals.length > 0
+        ? `${meals
+            .map((v) => v.data.name)
+            .join(' and ')} ${meals.length === 1 ? 'serves' : 'serve'} real food, not just pastries — so you can sit through a whole session without packing up to eat.`
+        : 'None of the places on this list serve full meals yet.',
   },
   {
     q: 'Is there anywhere free to work in Port Washington?',

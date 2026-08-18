@@ -5,6 +5,7 @@ import {
   VENUE_TYPES,
   DISTRICTS,
   COSTS,
+  SERVES,
   CALLS_OK,
   HOURS_SOURCES,
   SEASONS,
@@ -77,6 +78,9 @@ const venues = defineCollection({
       .default(['winter', 'spring', 'summer', 'fall']),
 
     cost: z.enum(values(COSTS)).default('purchase-expected'),
+
+    // What you can buy. Availability only — whether it's any good belongs in prose.
+    serves: z.array(z.enum(values(SERVES))).default([]),
 
     hours: z.object(hoursShape),
 

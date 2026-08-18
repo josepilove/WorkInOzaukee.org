@@ -57,6 +57,21 @@ export const COSTS = [
   { value: 'paid', hint: 'Per-day or per-hour charge.' },
 ] as const;
 
+/**
+ * What you can buy. Matters for a long session — whether you can stay through
+ * lunch without packing up is a real question, and nobody publishes it.
+ *
+ * Availability only. Whether the coffee is any good is a judgment, and belongs
+ * in the prose where it can be said properly.
+ */
+export const SERVES = [
+  { value: 'coffee', hint: 'Espresso drinks, drip, the usual.' },
+  { value: 'other-drinks', hint: 'Tea, smoothies, soda — something for people who are done with coffee.' },
+  { value: 'meals', hint: 'Real food you could call lunch.' },
+  { value: 'snacks', hint: 'Pastries, bakery, something to pick at.' },
+  { value: 'alcohol', hint: 'Beer, wine, cocktails.' },
+] as const;
+
 export const CALLS_OK = [
   { value: 'yes', hint: 'Take a call at your seat. Nobody cares.' },
   { value: 'quietly', hint: 'Possible if you keep your voice down or wait for a lull.' },
@@ -136,6 +151,7 @@ export const VOCAB: Vocab[] = [
   { field: 'type', applies: 'venue', required: true, about: 'What kind of place this is.', terms: VENUE_TYPES },
   { field: 'district', applies: 'venue', required: false, about: 'Roughly where in town. Groups the Places page.', terms: DISTRICTS },
   { field: 'cost', applies: 'venue', required: false, about: 'What it costs to sit there.', terms: COSTS },
+  { field: 'serves', applies: 'venue', required: false, about: 'What you can buy. A list. Leave empty if nothing.', terms: SERVES },
   { field: 'calls_ok', applies: 'venue', required: false, about: 'Whether you can take a call.', terms: CALLS_OK },
   { field: 'hours_source', applies: 'venue', required: false, about: 'Where the hours came from. Drives how much readers are told to trust them.', terms: HOURS_SOURCES },
   { field: 'seasons', applies: 'venue', required: false, about: 'When the place is usable at all. A list. Outdoor spots are not year-round.', terms: SEASONS },
