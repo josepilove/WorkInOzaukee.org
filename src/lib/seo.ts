@@ -151,8 +151,18 @@ export function linkifyVenues(text: string, venues: Venue[]): string {
     if (!html.includes(name)) continue;
 
     const external = v.data.url;
+    // rel="noopener" only — deliberately NOT noreferrer.
+    //
+    // noopener stops the opened page reaching back through window.opener
+    // (reverse tabnabbing). Modern browsers imply it for target="_blank", but
+    // it costs nothing to be explicit.
+    //
+    // noreferrer would strip the Referer header, which means a venue owner
+    // checking their analytics would never see this site sending them traffic.
+    // That referral is the entire argument for "let me keep your hours listed" —
+    // suppressing it would be throwing away the proof.
     const anchor = external
-      ? `<a href="${escapeHtml(external)}" class="ext" target="_blank" rel="noopener noreferrer">${name}<svg class="ext-icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 2h6v6M10 2 3 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only"> (opens their website in a new tab)</span></a>`
+      ? `<a href="${escapeHtml(external)}" class="ext" target="_blank" rel="noopener">${name}<svg class="ext-icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 2h6v6M10 2 3 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only"> (opens their website in a new tab)</span></a>`
       : `<a href="/venues/${v.id}">${name}</a>`;
 
     // Replace only the first mention — repeat links in one answer are noise.
