@@ -41,12 +41,14 @@ if [[ "${1:-}" == "--dry" ]]; then
 fi
 
 echo "==> Mirroring dist/ to ${REMOTE}"
+# '-u user,x': the dummy password stops lftp dropping the username when it has no
+# terminal to prompt on (it falls back to anonymous). Auth is still the SSH key.
 # --delete removes anything on the server that isn't in dist/. Leave Dreamhost's
 # own housekeeping files alone — .dh-diag is theirs, not ours, and deleting it
 # just makes their panel unhappy.
 lftp -e "
   set sftp:auto-confirm yes;
-  open sftp://josepilove@iad1-shared-b8-12.dreamhost.com;
+  open -u josepilove,x sftp://iad1-shared-b8-12.dreamhost.com;
   mirror -R --delete $DRY \
     --exclude-glob .dh-diag \
     --exclude-glob .well-known/ \
